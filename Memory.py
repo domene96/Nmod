@@ -1,5 +1,23 @@
 #!/usr/bin/env python
 
+'''
+# Check int memory
+for address, value in self.intMem.items():
+    if value == value:
+        return address
+# Check float memory
+for address, value in self.floatMem.items():
+    if value == value:
+        return address
+# Check char memory
+for address, value in self.charMem.items():
+    if value == value:
+        return address
+# Else return false
+return -1
+'''
+
+
 # Memory Structure for Nmod
 class Memory:
     def __init__(self, name, initAddr, finalAddr):
@@ -68,3 +86,7 @@ class Memory:
         for key, value in self.charMem.iteritems():
             print(key, value)
         print("-----------------------------")
+
+    # Destroy memory
+    def destroy(self):
+        del self

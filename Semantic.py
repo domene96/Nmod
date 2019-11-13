@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
+# Semantic implementation
 class Semantic:
+    # Semantic Types
     semanticCube = {
         '+':{
             'int':{
@@ -208,6 +210,7 @@ class Semantic:
         }
     }
 
+    # Operators to number
     operatorToKey = {
         '=':5,
         '+':6,
@@ -218,9 +221,9 @@ class Semantic:
         '<':11,
         '>=':12,
         '<=':13,
-        '==':14,
-        '&&':15,
-        '||':16,
+        'equal':14,
+        'and':15,
+        'or':16,
         'gotoF':17,
         'gotoV':18,
         'goto':19,
@@ -231,6 +234,7 @@ class Semantic:
         'endproc':24
     }
 
+    # Type to number
     typeToKey = {
         # 'error':0,
         'void':1,

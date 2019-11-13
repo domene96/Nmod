@@ -4,28 +4,53 @@
 program HelloWorld:
 
 # VARIABLES
-var example1, Example2, _example3, example4[4] : int;
-var 123abcValid : int;
-var example5, example6[10], ghi[90*8] : char;
-var example7 : float;
+var int : example1, Example2, _example3, example4[4:8];
+var int : 123abcValid;
+var char : example5, example6[0:99], ghi[90:8];
+var float : example7, mat[1:4,-2:5];
+var float : cube[0:2,-3:8,1:4];
 
 # MODULES
 testFunction <- char func(int example6) {
-  print(example6);
+  print(example6[6]);
   return example6;
 }
 
-helloWorld <- void func() {
+helloWorld <- void func()
+  var int : example10;
+  var char: example11;
+{
+  example10 = 10;
+  example11 = c;
   print("Hello World!");
+  print(example10);
+  print(c);
 }
 
 fibonacci <- int func(char x) {
-  # puedo usar parametros que no esten declarados como variables, no, que implica entonces?
-  if
-  (x < 2) { return x; }
-  else { return fibonacci
-  (x - 1) + fibonacci
-  (x - 2); }
+  if (x < 2) {
+    return x;
+  }
+  else {
+    return fibonacci(x - 1) + fibonacci(x - 2);
+  }
+}
+
+factorial <- int func(int num, int sum) {
+  sum = sum * num;
+  return factorial(num-1,sum);
+}
+
+nothing <- float func(float a, char abc, float b, float a)
+  var float : a;
+  var float : iiiii[100];
+{
+  a = 1;
+  print(a);
+  a = 1.1;
+  print(a);
+  a = a * 1.2;
+  print(a);
 }
 
 # MAIN BLOCK
@@ -33,6 +58,7 @@ main() {
   library("math");
   library("vector");
 
+  nothing(1.5, a, 5.6);
   rnom(example6[5], example1, example3, example3);
   histogram(example1, example2, example3, example5);
 
@@ -50,9 +76,9 @@ main() {
       a = 5;
       rnom(example6[5], example1, example3, example3);
 
-      if (1 && 1) {
-        if (1 || 1) {
-          if (1 == 1) {
+      if (1 and 1) {
+        if (1 or 1) {
+          if (1 equal 1) {
             if (1 >= 1) {
               example7 = 8.0 / 2.5;
             }

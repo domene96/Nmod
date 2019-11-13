@@ -33,6 +33,15 @@ class Stack:
     def print(self):
         return str(self.stack)
 
+    # Clean the stack
+    def clean(self):
+        while not self.empty():
+            self.pop()
+
+    # Destroy stack
+    def destroy(self):
+        del self
+
 # FIFO Queue implementantion
 # Used for: STORING temporary and polish vector values
 class Queue:
@@ -65,6 +74,10 @@ class Queue:
     # Print queue as string
     def print(self):
         return str(self.queue)
+
+    # Destroy queue
+    def destroy(self):
+        del self
 
 # Quadruple implementation
 class Quadruple:
@@ -99,6 +112,10 @@ class Quadruple:
     def print(self):
         print("[ " + self.operator + ", " + self.leftOperand + ", " + self.rightOperand + ", " + self.result + " ]")
 
+    # Destroy quadruple
+    def destroy(self):
+        del self
+
 # Activation Record implementation
 class ActivationRecord:
     # Initialize Activation Record
@@ -109,3 +126,7 @@ class ActivationRecord:
     # Print activation record
     def print(self):
         1
+
+    # Destroy activation record
+    def destroy(self):
+        del self
