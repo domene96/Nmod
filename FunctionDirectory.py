@@ -2,19 +2,6 @@
 
 from Structures import *
 
-# Method to check if variable is atomic (int, float, char)
-def isAtomic(self, var):
-    if isinstance(var, int):
-        return True
-    if isinstance(var, float):
-        return True
-    if isinstance(var, str):
-        if len(var) == 1:
-            return True
-        else:
-            return False
-    return False
-
 # Variable Table implementation
 class VariableTable:
     # Initialize Variable Table
@@ -27,95 +14,111 @@ class VariableTable:
             # [3] = total size
             # [4] = dimension pointer
 
+    # Method to check if variable is atomic (int, float, char)
+    def isAtomic(var):
+        if isinstance(var, int):
+            return True
+        if isinstance(var, float):
+            return True
+        if isinstance(var, str):
+            if len(var) == 1:
+                return True
+            else:
+                return False
+        return False
+
     # Method to check if function name exists in variable table
     def varExists(self, var):
-        return var in self.varTable.keys()
+        if var in self.varTable.keys():
+            return True
+        else:
+            return False
 
     # Method to add a new entry to the variable table
     def addVariable(self, var, type, addr, value, size, dim):
-        print(var, type, addr, value, size, dim)
+        #print(var, type, addr, value, size, dim)
         if self.varExists(var):
             # Variable exists in table
-            print('Variable ' + var + ' is already defined.')
+            print("#VariableDeclaration Error: The variable ",var," exists")
         else:
             # Add variable entry to table
             self.varTable[var] = [type, addr, value, size, dim]
 
     # Method to get the type of a given variable
     def getType(self, var):
-        if varExists(var):
+        if self.varExists(var):
             return self.varTable[var][0]
         else:
-            print('Variable ' + var + ' is not defined.')
+            print("#VariableDeclaration Error: The variable ",var," is not defined")
 
     # Method to set the type of a given variable
     def setType(self, var, type):
-        if varExists(var):
+        if self.varExists(var):
             self.varTable[var][0] = type
         else:
-            print('Variable ' + var + ' is not defined.')
+            print("#VariableDeclaration Error: The variable ",var," is not defined")
 
     # Method to get the address of a given variable
     def getAddress(self, var):
-        if varExists(var):
+        if self.varExists(var):
             return self.varTable[var][1]
         else:
-            print('Variable ' + var + ' is not defined.')
+            print("#VariableDeclaration Error: The variable ",var," is not defined")
 
     # Method to set the address of a given variable
     def setAddress(self, var, addr):
-        if varExists(var):
+        if self.varExists(var):
             self.varTable[var][1] = addr
         else:
-            print('Variable ' + var + ' is not defined.')
+            print("#VariableDeclaration Error: The variable ",var," is not defined")
 
     # Method to get the value of a given variable
-    def getVarValue(self, var):
-        if varExists(var):
+    def getValue(self, var):
+        if self.varExists(var):
             return self.varTable[var][2]
         else:
-            print('Variable ' + var + ' is not defined.')
+            print("#VariableDeclaration Error: The variable ",var," is not defined")
 
     # Method to set the value of a given variable
-    def setVarValue(self, var, value):
-        if varExists(var):
+    def setValue(self, var, value):
+        if self.varExists(var):
             self.varTable[var][2] = value
         else:
-            print('Variable ' + var + ' is not defined.')
+            print("#VariableDeclaration Error: The variable ",var," is not defined")
 
     # Method to get the total size of a given variable
     def getTotalSize(self, var):
-        if varExists(var):
+        if self.varExists(var):
             return self.varTable[var][3]
         else:
-            print('Variable ' + var + ' is not defined.')
+            print("#VariableDeclaration Error: The variable ",var," is not defined")
 
     # Method to set the total size of a given variable
     def setTotalSize(self, var, size):
-        if varExists(var):
+        if self.varExists(var):
             self.varTable[var][3] = size
         else:
-            print('Variable ' + var + ' is not defined.')
+            print("#VariableDeclaration Error: The variable ",var," is not defined")
 
     # Method to get the dimension pointer of a given variable
     def getDimPointer(self, var):
-        if isAtomic(var):
-            if varExists(var):
+        if self.isAtomic(var):
+            if self.varExists(var):
                 return self.varTable[var][4]
             else:
-                print('Variable ' + var + ' is not defined.')
+                print("#VariableDeclaration Error: The variable ",var," is not defined")
         else:
-                print('Variable ' + var + ' is not multidimensional.')
+            print("#VariableDeclaration Error: The variable ",var," is not dimensioned")
 
     # Method to set the dimension pointer of a given variable
     def setDimPointer(self, var, dim):
-        if isAtomic(var):
-            if varExists(var):
+        if self.isAtomic(var):
+            if self.varExists(var):
                 self.varTable[var][4] = dim
             else:
-                print('Variable ' + var + ' is not defined.')
+                print("#VariableDeclaration Error: The variable ",var," is not defined")
         else:
-            print('Variable ' + var + ' is not multidimensional.')
+            print("#VariableDeclaration Error: The variable ",var," is not dimensioned")
 
     # Method to print the variable table
     def print(self):
@@ -137,116 +140,120 @@ class FunctionDirectory:
             # [function name][i]
             # [0] = return type
             # [1] = dictionary for var table
-            # [2] = stack for expected parameter types
+            # [2] = param types list
             # [3] = quad place
             # [4] = memory direction
             # [5] = size of procedure stack
 
     # Method to check if function name exists in function directory
     def functionExists(self, func):
-        return func in self.functionDirectory.keys()
+        if func in self.functionDirectory.keys():
+            return True
+        else:
+            return False
 
     # Method to add a new entry to the function directory
-    def addFunction(self, func, type, varTable, paramTable, quadPlace, addr, size):
-        #print(func, type, varTable, paramTable, quadPlace, addr, size)
+    def addFunction(self, func, type, varTable, params, quadPlace, addr, size):
+        #print(func, type, varTable, params, quadPlace, addr, size)
         if self.functionExists(func):
-            # Function exists in directory
-            print('Function ' + func + ' is already defined.')
+            # Function exists in table
+            print("#FunctionDeclaration Error: The function ",func," exists")
+            return False
         else:
             # Add function entry to directory
-            self.functionDirectory[func] = [type, varTable, paramTable, quadPlace, addr, size]
+            self.functionDirectory[func] = [type, varTable, params, quadPlace, addr, size]
+            return True
 
     # Method to get the type of a given function
     def getType(self, func):
-        if func in self.functionDirectory:
+        if self.functionExists(func):
             return self.functionDirectory[func][0]
         else:
-            print('Function ' + func + ' is not defined.')
+            print("#FunctionDeclaration Error: The function ",func," is not defined")
 
     # Method to set the type of a given function
     def setType(self, func, type):
-        if func in self.functionDirectory:
+        if self.functionExists(func):
             self.functionDirectory[func][0] = type
         else:
-            print('Function ' + func + ' is not defined.')
+            print("#FunctionDeclaration Error: The function ",func," is not defined")
 
     # Method to get the variables of a given function
     def getVarTable(self, func):
-        if func in self.functionDirectory:
+        if self.functionExists(func):
             return self.functionDirectory[func][1]
         else:
-            print('Function ' + func + ' is not defined.')
+            print("#FunctionDeclaration Error: The function ",func," is not defined")
 
     # Method to set the variables of a given function
     def setVarTable(self, func, varTable):
-        if func in self.functionDirectory:
+        if self.functionExists(func):
             self.functionDirectory[func][1] = varTable
         else:
-            print('Function ' + func + ' is not defined.')
+            print("#FunctionDeclaration Error: The function ",func," is not defined")
 
     # Method to get the parameters of a given function
     def getParams(self, func):
-        if func in self.functionDirectory:
+        if self.functionExists(func):
             return self.functionDirectory[func][2]
         else:
-            print('Function ' + func + ' is not defined.')
+            print("#FunctionDeclaration Error: The function ",func," is not defined")
 
     # Method to set the variables of a given function
-    def setParams(self, func, paramTable):
-        if func in self.functionDirectory:
-            self.functionDirectory[func][2] = paramTable
+    def setParams(self, func, params):
+        if self.functionExists(func):
+            self.functionDirectory[func][2] = params
         else:
-            print('Function ' + func + ' is not defined.')
+            print("#FunctionDeclaration Error: The function ",func," is not defined")
 
     # Method to add a parameter to a given function
     def addParameter(self, func, paramType):
-        if func in self.functionDirectory:
-            self.functionDirectory[func][2].push(paramType)
-            self.functionDirectory[func][2].print()
+        if self.functionExists(func):
+            self.functionDirectory[func][2].append(paramType)
         else:
-            print('Function ' + func + ' is not defined.')
+            print("#FunctionDeclaration Error: The function ",func," is not defined")
 
     # Method to get the position of the functions' quad placement
     def getQuadPlace(self, func):
-        if func in self.functionDirectory:
+        if self.functionExists(func):
             return self.functionDirectory[func][3]
         else:
-            print('Function ' + func + ' is not defined.')
+            print("#FunctionDeclaration Error: The function ",func," is not defined")
 
     # Method to set the position of the functions' quad placement
     def setQuadPlace(self, func, pos):
-        if func in self.functionDirectory:
+        if self.functionExists(func):
             self.functionDirectory[func][3] = pos
         else:
-            print('Function ' + func + ' is not defined.')
+            print("#FunctionDeclaration Error: The function ",func," is not defined")
 
     # Method to get the memory address of a given function
     def getAddress(self, func):
-        if func in self.functionDirectory:
+        if self.functionExists(func):
             return self.functionDirectory[func][4]
         else:
-            print('Function ' + func + ' is not defined.')
+            print("#FunctionDeclaration Error: The function ",func," is not defined")
 
     # Method to set the memory address of a given function
     def setAddress(self, func, addr):
-        if func in self.functionDirectory:
+        if self.functionExists(func):
             self.functionDirectory[func][4] = addr
         else:
-            print('Function ' + func + ' is not defined.')
+            print("#FunctionDeclaration Error: The function ",func," is not defined")
 
     # Method to get the stack required by a given function
     def getStackSize(self, func):
-        if func in self.functionDirectory:
+        if self.functionExists(func):
             return self.functionDirectory[func][5]
         else:
-            print('Function ' + func + ' is not defined.')
+            print("#FunctionDeclaration Error: The function ",func," is not defined")
 
     # Method to set the stack required by a given function
     def setStackSize(self, func, size):
-        if func in self.functionDirectory:
+        if self.functionExists(func):
             self.functionDirectory[func][5] = size
         else:
-            print('Function ' + func + ' is not defined.')
+            print("#FunctionDeclaration Error: The function ",func," is not defined")
 
     # Method to print the function directory
     def print(self):
@@ -262,8 +269,7 @@ class FunctionDirectory:
                 elif i == 1:
                     self.functionDirectory[key][i].print()
                 elif i == 2:
-                    print("Parameter Stack: ",
-                    self.functionDirectory[key][i].print())
+                    print("Parameters: ", self.functionDirectory[key][i])
                 elif i == 3:
                     print("Quad place: ", value)
                 elif i == 4:

@@ -31,7 +31,7 @@ class Stack:
 
     # Print stack as string
     def print(self):
-        return str(self.stack)
+        return print(self.stack)
 
     # Clean the stack
     def clean(self):
@@ -73,7 +73,7 @@ class Queue:
 
     # Print queue as string
     def print(self):
-        return str(self.queue)
+        return print(self.queue)
 
     # Destroy queue
     def destroy(self):
@@ -110,11 +110,59 @@ class Quadruple:
 
     # Print quad data
     def print(self):
-        print("[ " + self.operator + ", " + self.leftOperand + ", " + self.rightOperand + ", " + self.result + " ]")
+        print("[ " + str(self.operator) + ", " + str(self.leftOperand) + ", " + str(self.rightOperand) + ", " + str(self.result) + " ]")
 
     # Destroy quadruple
     def destroy(self):
         del self
+
+# Data Structure for dimension information
+class DimensionNode:
+    # Initialize node
+    def __init__():
+        self.low = None
+        self.high = None
+        self.k = None
+        self.dimPointer = None
+
+    # Get lower bound of dimension
+    def getDimLow(self):
+        return self.low
+
+    # Set lower bound of dimension
+    def setDimLow(self, val):
+        self.low = val
+
+    # Get higher bound of dimension
+    def getDimHigh(self):
+        return self.high
+
+    # Set higher bound of dimension
+    def setDimHigh(self, val):
+        self.high = val
+
+    # Get k constant of dimension
+    def getDimK(self):
+        return self.k
+
+    # Set k constant of dimension
+    def setDimK(self, val):
+        self.k = val
+
+    # Get next dimension node
+    def getDimPointer(self):
+        return self.dimPointer
+
+    # Set next dimension node
+    def setDimPointer(self, val):
+        self.dimPointer = val
+
+    # Check if current dimension is last dimension
+    def isLast(self):
+        if self.dimPointer == None:
+            return True
+        else:
+            return False
 
 # Activation Record implementation
 class ActivationRecord:

@@ -72,40 +72,6 @@ class Semantic:
                 'float': 'error',
             }
         },
-        '<':{
-            'int':{
-                'int': 'int',
-                'char': 'error',
-                'float': 'int',
-            },
-            'float':{
-                'int': 'int',
-                'char': 'error',
-                'float': 'int',
-            },
-            'char':{
-                'int': 'error',
-                'char': 'int',
-                'float': 'error',
-            }
-        },
-        '>':{
-            'int':{
-                'int': 'int',
-                'char': 'error',
-                'float': 'int',
-            },
-            'float':{
-                'int': 'int',
-                'char': 'error',
-                'float': 'int',
-            },
-            'char':{
-                'int': 'error',
-                'char': 'int',
-                'float': 'error',
-            }
-        },
         '<=':{
             'int':{
                 'int': 'int',
@@ -140,7 +106,41 @@ class Semantic:
                 'float': 'error',
             }
         },
-        '==':{
+        '<':{
+            'int':{
+                'int': 'int',
+                'char': 'error',
+                'float': 'int',
+            },
+            'float':{
+                'int': 'int',
+                'char': 'error',
+                'float': 'int',
+            },
+            'char':{
+                'int': 'error',
+                'char': 'int',
+                'float': 'error',
+            }
+        },
+        '>':{
+            'int':{
+                'int': 'int',
+                'char': 'error',
+                'float': 'int',
+            },
+            'float':{
+                'int': 'int',
+                'char': 'error',
+                'float': 'int',
+            },
+            'char':{
+                'int': 'error',
+                'char': 'int',
+                'float': 'error',
+            }
+        },
+        'equal':{
             'int':{
                 'int': 'int',
                 'char': 'error',
@@ -174,7 +174,7 @@ class Semantic:
                 'float': 'error',
             }
         },
-        '&&':{
+        'and':{
             'int':{
                 'int': 'int',
                 'char': 'error',
@@ -191,7 +191,7 @@ class Semantic:
                 'float': 'error',
             }
         },
-        '||':{
+        'or':{
             'int':{
                 'int': 'int',
                 'char': 'error',

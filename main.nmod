@@ -1,7 +1,7 @@
 /# Example program for compiler Nmod
   Compiler developed by A01192913 #/
 
-program HelloWorld:
+program NmodExample:
 
 # VARIABLES
 var int : example1, Example2, _example3, example4[4:8];
@@ -11,23 +11,25 @@ var float : example7, mat[1:4,-2:5];
 var float : cube[0:2,-3:8,1:4];
 
 # MODULES
-testFunction <- char func(int example6) {
-  print(example6[6]);
-  return example6;
+testFunction <- char func(int example5) {
+  print(example5);
+  return example1;
 }
 
 helloWorld <- void func()
   var int : example10;
-  var char: example11;
+  var char : example11;
 {
   example10 = 10;
-  example11 = c;
+  example11 = 'c';
   print("Hello World!");
   print(example10);
-  print(c);
+  print(example11);
+  print('c');
+  print(10);
 }
 
-fibonacci <- int func(char x) {
+fibonacci <- int func(int x) {
   if (x < 2) {
     return x;
   }
@@ -36,20 +38,34 @@ fibonacci <- int func(char x) {
   }
 }
 
+/#
 factorial <- int func(int num, int sum) {
   sum = sum * num;
-  return factorial(num-1,sum);
+  return factorial(num-1, sum);
 }
+#/
 
-nothing <- float func(float a, char abc, float b, float a)
-  var float : a;
-  var float : iiiii[100];
+nothing <- float func(float a, char abc, float b, float c)
+  var int : d;
+  var float : iiiii[0:100];
 {
   a = 1;
   print(a);
-  a = 1.1;
-  print(a);
+  b = 1.1;
+  print(b);
+  c = a - b;
+  print(c);
+  d = a / b;
+  print(d);
   a = a * 1.2;
+  print(a);
+  a = d * b * c * 1.2;
+  print(a);
+  a = a + example7 * 1;
+  print(a);
+  a = d + example7 * 0;
+  print(a);
+  a = d * example7 * 0;
   print(a);
 }
 
@@ -58,23 +74,25 @@ main() {
   library("math");
   library("vector");
 
-  nothing(1.5, a, 5.6);
-  rnom(example6[5], example1, example3, example3);
-  histogram(example1, example2, example3, example5);
+  nothing(1.5, a, 5.6)
+  rnom(example6[5], example1, _example3, _example3);
+  histogram(example1, Example2, _example3, example5);
 
   while (1) {
     print("Tell me something: ");
+    print(_example3);
     read("string");
-    read(string);
+    read(10);
+    # read(string);
 
     print(pow(2,18));
     print(sum(2,18));
     print(fibonacci(18));
     print(sqrt(2,18));
 
-    if (string > 1000) {
-      a = 5;
-      rnom(example6[5], example1, example3, example3);
+    if (example1 > 1000) {
+      _example3 = 5;
+      rnom(example6[13], example1, _example3, _example3);
 
       if (1 and 1) {
         if (1 or 1) {
@@ -84,11 +102,11 @@ main() {
             }
           }
           else {
-            _example3 = histogram(example1, example2, example3, example5);;
+            _example3 = histogram(example1, Example2, _example3, example5);;
           }
         }
         while (example1 >= _example3) {
-          ex = true;
+          pop = example1;
         }
       }
     }

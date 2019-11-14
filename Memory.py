@@ -1,63 +1,92 @@
 #!/usr/bin/env python
 
-'''
-# Check int memory
-for address, value in self.intMem.items():
-    if value == value:
-        return address
-# Check float memory
-for address, value in self.floatMem.items():
-    if value == value:
-        return address
-# Check char memory
-for address, value in self.charMem.items():
-    if value == value:
-        return address
-# Else return false
-return -1
-'''
-
-
 # Memory Structure for Nmod
 class Memory:
     def __init__(self, name, initAddr, finalAddr):
         # Global / Local / Constant
         self.name = name
-
         # Limits
         self.initAddr = initAddr
         self.finalAddr = finalAddr
-
         # Local variables
         self.intMem = {}
         self.floatMem = {}
         self.charMem = {}
-
         # Number of slots per data type
-        self.slotsPerType = (finalAddr - initAddr + 1) / 3
+        self.slotsPerType = int((self.finalAddr - self.initAddr + 1) / 3)
+        # Pointers
+        self.intPointer = self.initAddr
+        self.floatPointer = self.initAddr + self.slotsPerType
+        self.charPointer = self.initAddr + self.slotsPerType * 2
 
         # Counter for each type of variable
-        self.varCount = [0,0,0,0]
+        self.varCount = [0,0,0]
 
     # Move to next address
-    def nextMemoryDirection(self):
-        1
+    def nextMemoryDirection(self, type):
+        if type == 'int':
+            if self.intPointer > self.initAddr - 1 + self.slotsPerType:
+                print("#MemoryManagement Error: int upper out of bounds ",addr," address")
+            self.intPointer += 1
+            return self.intPointer - 1
+        elif type == 'float':
+            if self.floatPointer > self.initAddr - 1 + self.slotsPerType * 2:
+                print("#MemoryManagement Error: float upper out of bounds ",addr," address")
+            self.floatPointer += 1
+            return self.floatPointer - 1
+        elif type == 'char':
+            if self.charPointer > self.initAddr - 1 + self.slotsPerType * 3:
+                print("#MemoryManagement Error: char upper out of bounds ",addr," address")
+            self.charPointer += 1
+            return self.charPointer - 1
+
+    # Return memory addres of id
+    def getAddressFromID(self, id):
+        # Check int memory
+        for addr, val in self.intMem.items():
+            if id == val:
+                return addr
+        # Check float memory
+        for addr, val in self.floatMem.items():
+            if id == val:
+                return addr
+        # Check char memory
+        for addr, val in self.charMem.items():
+            if id == val:
+                return addr
+        # Not in current memory
+        return None
+
+    # Get value from memory address
+    def getValueAtAddress(self, addr):
+        if addr > self.initAddr:
+            if addr < self.initAddr + self.slotsPerType:
+                return intMem[addr]
+            elif addr < self.initAddr + self.slotsPerType * 2:
+                return floatMem[addr]
+            elif addr < self.initAddr + self.slotsPerType * 3:
+                return charMem[addr]
+            else:
+                print("#MemoryManagement Error: upper out of bounds ",addr," address")
+        else:
+            print("#MemoryManagement Error: lower out of bounds ",addr," address")
 
     # Set a value to a memory address
-    def setValueAtAddress(self):
-        1
+    def setValueAtAddress(self, addr, val):
+        if addr > self.initAddr:
+            if addr < self.initAddr + self.slotsPerType:
+                intMem[addr] = val
+            elif addr < self.initAddr + self.slotsPerType * 2:
+                floatMem[addr] = val
+            elif addr < self.initAddr + self.slotsPerType * 3:
+                charMem[addr] = val
+            else:
+                print("#MemoryManagement Error: upper out of bounds ",addr," address")
+        else:
+            print("#MemoryManagement Error: lower out of bounds ",addr," address")
 
-    # Get a value from memory address
-    def getValueAtAddress(self):
-        1
-
-    # Reserve a memory space
-    # for array or matrix
-    def reserveMemoryAddresses(self):
-        1
-
-    # Get the address of a constant value
-    def getConstantAddress(self, value):
+    # Reserve a memory space for dimensional variables
+    def reserveMemoryAddresses(self, type):
         1
 
     # Free the current memory space
@@ -66,8 +95,12 @@ class Memory:
         self.intMem = {}
         self.floatMem = {}
         self.charMem = {}
+        # Reset pointers
+        self.intPointer = self.initAddr
+        self.floatPointer = self.initAddr + self.slotsPerType
+        self.charPointer = self.initAddr + self.slotsPerType * 2
         # Clear variable counters
-        self.varCount = [0,0,0,0]
+        self.varCount = [0,0,0]
 
     # Print Memory
     def printMemory(self):

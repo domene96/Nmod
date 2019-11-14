@@ -41,12 +41,21 @@ class NmodListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by NmodParser#f_id.
-    def enterF_id(self, ctx:NmodParser.F_idContext):
+    # Enter a parse tree produced by NmodParser#id_decl.
+    def enterId_decl(self, ctx:NmodParser.Id_declContext):
         pass
 
-    # Exit a parse tree produced by NmodParser#f_id.
-    def exitF_id(self, ctx:NmodParser.F_idContext):
+    # Exit a parse tree produced by NmodParser#id_decl.
+    def exitId_decl(self, ctx:NmodParser.Id_declContext):
+        pass
+
+
+    # Enter a parse tree produced by NmodParser#id_access.
+    def enterId_access(self, ctx:NmodParser.Id_accessContext):
+        pass
+
+    # Exit a parse tree produced by NmodParser#id_access.
+    def exitId_access(self, ctx:NmodParser.Id_accessContext):
         pass
 
 
@@ -74,15 +83,6 @@ class NmodListener(ParseTreeListener):
 
     # Exit a parse tree produced by NmodParser#block.
     def exitBlock(self, ctx:NmodParser.BlockContext):
-        pass
-
-
-    # Enter a parse tree produced by NmodParser#parameter.
-    def enterParameter(self, ctx:NmodParser.ParameterContext):
-        pass
-
-    # Exit a parse tree produced by NmodParser#parameter.
-    def exitParameter(self, ctx:NmodParser.ParameterContext):
         pass
 
 

@@ -2,5 +2,6 @@
 
 # Virtual Machine implementation
 class VirtualMachine:
+    # Initialize virtual machine
     def __init__(self):
         1
