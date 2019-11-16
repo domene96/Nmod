@@ -230,8 +230,10 @@ class Semantic:
         'print':20,
         'read':21,
         'return':22,
-        'gosub':23,
-        'endproc':24
+        'era':23,
+        'param':24,
+        'gosub':25,
+        'endproc':26
     }
 
     # Type to number

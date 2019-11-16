@@ -19,57 +19,37 @@ class Memory:
         self.floatPointer = self.initAddr + self.slotsPerType
         self.charPointer = self.initAddr + self.slotsPerType * 2
 
-        # Counter for each type of variable
-        self.varCount = [0,0,0]
-
     # Move to next address
     def nextMemoryDirection(self, type):
         if type == 'int':
             if self.intPointer > self.initAddr - 1 + self.slotsPerType:
-                print("#MemoryManagement Error: int upper out of bounds ",addr," address")
+                print("#MemoryManagement Error: int upper out of bounds ", addr, " address")
             self.intPointer += 1
             return self.intPointer - 1
         elif type == 'float':
             if self.floatPointer > self.initAddr - 1 + self.slotsPerType * 2:
-                print("#MemoryManagement Error: float upper out of bounds ",addr," address")
+                print("#MemoryManagement Error: float upper out of bounds ", addr, " address")
             self.floatPointer += 1
             return self.floatPointer - 1
         elif type == 'char':
             if self.charPointer > self.initAddr - 1 + self.slotsPerType * 3:
-                print("#MemoryManagement Error: char upper out of bounds ",addr," address")
+                print("#MemoryManagement Error: char upper out of bounds ", addr, " address")
             self.charPointer += 1
             return self.charPointer - 1
-
-    # Return memory addres of id
-    def getAddressFromID(self, id):
-        # Check int memory
-        for addr, val in self.intMem.items():
-            if id == val:
-                return addr
-        # Check float memory
-        for addr, val in self.floatMem.items():
-            if id == val:
-                return addr
-        # Check char memory
-        for addr, val in self.charMem.items():
-            if id == val:
-                return addr
-        # Not in current memory
-        return None
 
     # Get value from memory address
     def getValueAtAddress(self, addr):
         if addr > self.initAddr:
             if addr < self.initAddr + self.slotsPerType:
-                return intMem[addr]
+                return self.intMem[addr]
             elif addr < self.initAddr + self.slotsPerType * 2:
-                return floatMem[addr]
+                return self.floatMem[addr]
             elif addr < self.initAddr + self.slotsPerType * 3:
-                return charMem[addr]
+                return self.charMem[addr]
             else:
-                print("#MemoryManagement Error: upper out of bounds ",addr," address")
+                print("#MemoryManagement Error: upper out of bounds ", addr, " address")
         else:
-            print("#MemoryManagement Error: lower out of bounds ",addr," address")
+            print("#MemoryManagement Error: lower out of bounds ", addr, " address")
 
     # Set a value to a memory address
     def setValueAtAddress(self, addr, val):
@@ -81,13 +61,27 @@ class Memory:
             elif addr < self.initAddr + self.slotsPerType * 3:
                 charMem[addr] = val
             else:
-                print("#MemoryManagement Error: upper out of bounds ",addr," address")
+                print("#MemoryManagement Error: upper out of bounds ", addr, " address")
         else:
-            print("#MemoryManagement Error: lower out of bounds ",addr," address")
+            print("#MemoryManagement Error: lower out of bounds ", addr, " address")
 
     # Reserve a memory space for dimensional variables
-    def reserveMemoryAddresses(self, type):
-        1
+    def reserveMemoryAddresses(self, type, size):
+        if type == 'int':
+            if self.intPointer > self.initAddr - 1 + self.slotsPerType:
+                print("#MemoryManagement Error: int upper out of bounds ", addr, " address")
+            self.intPointer += size
+            return self.intPointer - size
+        elif type == 'float':
+            if self.floatPointer > self.initAddr - 1 + self.slotsPerType * 2:
+                print("#MemoryManagement Error: float upper out of bounds ", addr, " address")
+            self.floatPointer += size
+            return self.floatPointer - size
+        elif type == 'char':
+            if self.charPointer > self.initAddr - 1 + self.slotsPerType * 3:
+                print("#MemoryManagement Error: char upper out of bounds ", addr, " address")
+            self.charPointer += size
+            return self.charPointer - size
 
     # Free the current memory space
     def clearMemory(self):
@@ -99,8 +93,6 @@ class Memory:
         self.intPointer = self.initAddr
         self.floatPointer = self.initAddr + self.slotsPerType
         self.charPointer = self.initAddr + self.slotsPerType * 2
-        # Clear variable counters
-        self.varCount = [0,0,0]
 
     # Print Memory
     def printMemory(self):

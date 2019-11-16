@@ -119,7 +119,7 @@ class Quadruple:
 # Data Structure for dimension information
 class DimensionNode:
     # Initialize node
-    def __init__():
+    def __init__(self):
         self.low = None
         self.high = None
         self.k = None
@@ -163,6 +163,24 @@ class DimensionNode:
             return True
         else:
             return False
+
+    # Method to clean all attributes of dimension node
+    def clear(self):
+        self.low = None
+        self.high = None
+        self.k = None
+        self.dimPointer = None
+
+    # Print dimension node
+    def print(self):
+        if self.dimPointer != None:
+            print("[ " + str(self.low) + ", " + str(self.high) + ", " + str(self.k) + ", " + str(self.dimPointer.print()) + " ]")
+        else:
+            print("[ " + str(self.low) + ", " + str(self.high) + ", " + str(self.k) + ", " + str(None) + " ]")
+
+    # Method to destroy the dimension node
+    def destroy(self):
+        del self
 
 # Activation Record implementation
 class ActivationRecord:

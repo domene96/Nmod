@@ -6,7 +6,7 @@ program NmodExample:
 # VARIABLES
 var int : example1, Example2, _example3, example4[4:8];
 var int : 123abcValid;
-var char : example5, example6[0:99], ghi[90:8];
+var char : example5, example6[0:99], ghi[8:80];
 var float : example7, mat[1:4,-2:5];
 var float : cube[0:2,-3:8,1:4];
 
@@ -65,8 +65,8 @@ nothing <- float func(float a, char abc, float b, float c)
   print(a);
   a = d + example7 * 0;
   print(a);
-  a = d * example7 * 0;
-  print(a);
+  b = d * example7 * 0;
+  print(b);
 }
 
 # MAIN BLOCK
@@ -74,7 +74,7 @@ main() {
   library("math");
   library("vector");
 
-  nothing(1.5, a, 5.6)
+  nothing(1 + 0.5, 'a', 5.6, 9.9)
   rnom(example6[5], example1, _example3, _example3);
   histogram(example1, Example2, _example3, example5);
 
@@ -85,10 +85,12 @@ main() {
     read(10);
     # read(string);
 
+    /#
     print(pow(2,18));
     print(sum(2,18));
-    print(fibonacci(18));
     print(sqrt(2,18));
+    #/
+    print(fibonacci(18));
 
     if (example1 > 1000) {
       _example3 = 5;

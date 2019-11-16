@@ -15,7 +15,7 @@ class VariableTable:
             # [4] = dimension pointer
 
     # Method to check if variable is atomic (int, float, char)
-    def isAtomic(var):
+    def isAtomic(self, var):
         if isinstance(var, int):
             return True
         if isinstance(var, float):
@@ -102,7 +102,7 @@ class VariableTable:
 
     # Method to get the dimension pointer of a given variable
     def getDimPointer(self, var):
-        if self.isAtomic(var):
+        if not self.isAtomic(var):
             if self.varExists(var):
                 return self.varTable[var][4]
             else:
@@ -112,7 +112,7 @@ class VariableTable:
 
     # Method to set the dimension pointer of a given variable
     def setDimPointer(self, var, dim):
-        if self.isAtomic(var):
+        if not self.isAtomic(var):
             if self.varExists(var):
                 self.varTable[var][4] = dim
             else:
@@ -126,6 +126,8 @@ class VariableTable:
         print("-----------------------------")
         for key, value in self.varTable.items():
             print(key,"=>",value)
+            if value[4] != None:
+                value[4].print()
         print("-----------------------------")
 
     # Method to destroy the variable table
