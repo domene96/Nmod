@@ -106,7 +106,7 @@ class VariableTable:
             if self.varExists(var):
                 return self.varTable[var][4]
             else:
-                print("#VariableDeclaration Error: The variable ",var," is not defined")
+                print("1#VariableDeclaration Error: The variable ",var," is not defined")
         else:
             print("#VariableDeclaration Error: The variable ",var," is not dimensioned")
 
@@ -126,8 +126,8 @@ class VariableTable:
         print("-----------------------------")
         for key, value in self.varTable.items():
             print(key,"=>",value)
-            if value[4] != None:
-                value[4].print()
+            # if value[4] != None:
+            #     value[4].print()
         print("-----------------------------")
 
     # Method to destroy the variable table

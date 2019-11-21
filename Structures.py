@@ -10,6 +10,7 @@ class Stack:
     # Insert value into stack
     def push(self, value):
         self.stack.append(value)
+        #self.print()
 
     # Remove from stack, return removed item
     def pop(self):
@@ -18,7 +19,8 @@ class Stack:
             self.stack.pop()
             return top
         else:
-            print("Nothing in stack")
+            1
+            # print("Nothing in stack")
 
     # Return first item in stack
     def top(self):
@@ -156,6 +158,7 @@ class DimensionNode:
     # Set next dimension node
     def setDimPointer(self, val):
         self.dimPointer = val
+        # print("dim pointer ", self.dimPointer)
 
     # Check if current dimension is last dimension
     def isLast(self):
@@ -174,7 +177,8 @@ class DimensionNode:
     # Print dimension node
     def print(self):
         if self.dimPointer != None:
-            print("[ " + str(self.low) + ", " + str(self.high) + ", " + str(self.k) + ", " + str(self.dimPointer.print()) + " ]")
+            print("[ " + str(self.low) + ", " + str(self.high) + ", " + str(self.k) + ", " + str(self.dimPointer) + " ]")
+            self.dimPointer.print()
         else:
             print("[ " + str(self.low) + ", " + str(self.high) + ", " + str(self.k) + ", " + str(None) + " ]")
 

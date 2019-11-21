@@ -46,14 +46,6 @@ class Compiler:
     # PROCEDURES
     # Insert function and type to function directory
     def insertFunctionDirectory(self, func, type):
-        if self.localFunc == 'global':
-            opAddr = self.semantic.operatorToKey['goto']
-            quad = Quadruple(opAddr, None, None, None)
-            self.quadList.append(quad)
-            quad = Quadruple('goto', None, None, None)
-            self.quadList2.append(quad)
-            self.quadCount += 1
-        self.jumpStack.push(self.quadCount-1)
         if self.functionDirectory.addFunction(func, type, VariableTable(), [], None, None, None):
             return True
         else:
@@ -82,6 +74,8 @@ class Compiler:
                 memDir = self.globalMem.reserveMemoryAddresses(self.localType, size)
             else:
                 memDir = self.localMem.reserveMemoryAddresses(self.localType, size)
+            if id.find('[') > 0:
+                id = id[:id.find('[')]
             self.functionDirectory.getVarTable(func).addVariable(id, type, memDir, None, size, None)
         else:
             print("#FunctionDeclaration Error: The function ", func, " is not defined")
@@ -165,6 +159,8 @@ class Compiler:
     # Method to set lower bound of a dimension
     def setDimLowBound(self, val):
         self.currentDimNode.low = val
+        # print("low")
+        # self.currentDimNode.print()
 
     # Method to set upper bound of a dimension
     def setDimHighBound(self, val):
@@ -173,15 +169,16 @@ class Compiler:
             sys.exit()
         self.currentDimNode.high = val
         self.r = self.r * (int(self.currentDimNode.high) - int(self.currentDimNode.low) + 1)
+        # print("high")
+        # self.currentDimNode.print()
 
     # Method to move to next dimension
     def addDimension(self):
         self.dim += 1
-        self.prevDimNode.setDimLow(self.currentDimNode.getDimLow())
-        self.prevDimNode.setDimHigh(self.currentDimNode.getDimHigh())
-        self.prevDimNode.setDimK(self.currentDimNode.getDimK())
+        self.prevDimNode = self.currentDimNode
         self.currentDimNode = DimensionNode()
-        self.prevDimNode.setDimPointer(self.currentDimNode) #######
+        # print("prev")
+        # self.prevDimNode.print()
 
     # Method to calculate k of a dimension
     def calculateK(self):
@@ -191,6 +188,7 @@ class Compiler:
         self.dim = 1
         self.sum = 0
         while self.dim <= dimCant:
+            # print("while k ", self.dim, dimCant)
             low = int(self.currentDimNode.getDimLow())
             high = int(self.currentDimNode.getDimHigh())
             m = self.r / (high - low + 1)
@@ -199,39 +197,103 @@ class Compiler:
                 self.currentDimNode.setDimK(m)
             self.sum = self.sum + low * m
             self.dim += 1
+            # print("m")
+            # self.currentDimNode.print()
             if self.currentDimNode.getDimPointer() != None:
                 self.currentDimNode = self.currentDimNode.getDimPointer()
         self.k = self.sum
         self.currentDimNode.setDimK(0 - self.k)
+        # print("k")
+        # self.currentDimNode.print()
 
     # Method to set the base address to the variable in var table
     def associateBaseAddr(self, id):
-        self.rootDimNode.print()
+        #self.rootDimNode.print()
         self.functionDirectory.getVarTable(self.localFunc).setDimPointer(id, self.rootDimNode)
 
     # Method to verify a variable is dimensioned and generate quadruples
-    def verifyDimVar(id):
-        1
+    def verifyDimVar(self, id):
+        print("var ", id)
+        if self.functionDirectory.getVarTable(self.localFunc).getDimPointer(id) != None:
+            # print("local")
+            self.currentDimNode = self.functionDirectory.getVarTable(self.localFunc).getDimPointer(id)
+            return True
+        elif self.functionDirectory.getVarTable('global').getDimPointer(id) != None:
+            self.functionDirectory.getVarTable('global').print()
+            # print("global")
+            self.currentDimNode = self.functionDirectory.getVarTable('global').getDimPointer(id)
+            return True
+        else:
+            # print("nope")
+            return False
 
     # Method to begin dimensioned variable access
-    def dimVarBegin(self):
-        1# id = self.operandStack.pop()
-        # verifyDimVar(id)
-        # self.dim = 1
-        # self.dimStack.push({id, self.dim})
-        # dimNode = self.FunctionDirectory.getVarTable(self.localFunc).getDimPointer(id)
-        # dimNode.print()
-        # self.insertFalseBottom()
+    def dimVarBegin(self, id):
+        print("verify ", id, self.verifyDimVar(id))
+        if self.verifyDimVar(id):
+            self.dim = 1
+            self.insertStackDim({self.dim, id})
+            self.insertFalseBottom()
+        else:
+            print("#VariableDeclaration Error: The variable ", id," is not dimensioned")
 
     # Method to continue dimensioned variable access, generate quadruples
-    def nextDimension(self):
-        1
+    def nextDimension(self, id):
+        self.dim += 1
+        self.insertStackDim({self.dim, id})
+        self.currentDimNode = self.currentDimNode.getDimPointer(id)
 
     # Method to end dimensioned variable access
-    def dimVarEnd(self):
-        1
+    def dimVarEnd(self, id):
+        # Generate revise quadruples to check value between dimension bounds
+        opAddr = self.semantic.operatorToKey['revise']
+        low = self.currentDimNode.getDimLow()
+        high = self.currentDimNode.getDimHigh()
+        aux = self.operandStack.pop()
+        quad = Quadruple(opAddr, low, high, aux)
+        self.quadList.append(quad)
+        quad = Quadruple('revise', low, high, aux)
+        self.quadList2.append(quad)
+        self.quadCount += 1
+        # Generate sum quadruple of aux and k const
+        opAddr = self.semantic.operatorToKey['+']
+        k = self.currentDimNode.getDimK()
+        resAddr = self.getTempAddr('float')
+        quad = Quadruple(opAddr, aux, k, resAddr)
+        self.quadList.append(quad)
+        quad = Quadruple('+', aux, k, resAddr)
+        self.quadList2.append(quad)
+        self.quadCount += 1
+        tempAddr = resAddr
+        # Generate sum quadruple of prev sum and base addr
+        if self.functionDirectory.getVarTable(self.localFunc).getAddress(id):
+            baseAddr = self.functionDirectory.getVarTable(self.localFunc).getAddress(id)
+        elif self.functionDirectory.getVarTable('global').getAddress(id):
+            baseAddr = self.functionDirectory.getVarTable('global').getAddress(id)
+        else:
+            print("1#VariableDeclaration Error: The variable ", id, " is not defined")
+            sys.exit()
+        resAddr = self.getTempAddr('float')
+        quad = Quadruple(opAddr, tempAddr, baseAddr, resAddr)
+        self.quadList.append(quad)
+        quad = Quadruple('+', tempAddr, baseAddr, resAddr)
+        self.quadList2.append(quad)
+        self.quadCount += 1
+        self.operandStack.push(resAddr)
+        self.popStackOperator()
+        self.popStackDim()
 
     # MAIN
+    # Generate initial goto (to start at main)
+    def initialGoto(self):
+        opAddr = self.semantic.operatorToKey['goto']
+        quad = Quadruple(opAddr, None, None, None)
+        self.quadList.append(quad)
+        quad = Quadruple('goto', None, None, None)
+        self.quadList2.append(quad)
+        self.quadCount += 1
+        self.insertStackJump(self.quadCount - 1)
+
     # Beginning of main
     def mainBegin(self):
         self.moduleBegin()
@@ -239,30 +301,34 @@ class Compiler:
 
     # Debugging prints
     def mainEnd(self):
+        #1
         self.functionDirectory.print()
-        #self.printQuadruples();
-        self.printQuadruples2();
+        self.printQuadruples();
+        #self.printQuadruples2();
 
     # MODULES
     # Beginning of module, clear local memory
     def moduleBegin(self):
         self.localMem.clearMemory()
+        self.saveFunctionGoto()
 
     # End of module, generate endproc
     def moduleEnd(self):
+        #self.verifyReturn()
         opAddr = self.semantic.operatorToKey['endproc']
         quad = Quadruple(opAddr, None, None, None)
         self.quadList.append(quad)
         quad = Quadruple('endproc', None, None, None)
         self.quadList2.append(quad)
         self.quadCount += 1
+        #self.fillGoto(self.jumpStack.pop())
 
     # Method to get the memory address of the expected return in a given function
     def getModuleReturnAddr(self, func):
         if self.functionDirectory.functionExists(func):
             return self.functionDirectory.getAddress(func)
         else:
-            print("#FunctionDeclaration Error: The function ",func," is not defined")
+            print("#FunctionDeclaration Error: The function ", func," is not defined")
             sys.exit()
 
     # Method to get the type of the expected return in a given function
@@ -270,7 +336,7 @@ class Compiler:
         if self.functionDirectory.functionExists(func):
             return self.functionDirectory.getType(func)
         else:
-            print("#FunctionDeclaration Error: The function ",func," is not defined")
+            print("#FunctionDeclaration Error: The function ", func," is not defined")
             sys.exit()
 
     # PARAMETERS
@@ -307,7 +373,7 @@ class Compiler:
         elif id in self.constants:
             return self.constants[id][0]
         else:
-            print("#MemoryManagement Error: Attempting to find ", id, " was not found")
+            #print("#MemoryManagement Warning: Attempting to find ", id, " was not found")
             return id
 
     # Temporal address to store quad result
@@ -315,7 +381,7 @@ class Compiler:
         return self.localMem.nextMemoryDirection(type)
 
     # QUADRUPLES
-    # Print quadList
+    # Print (memory) quadList
     def printQuadruples(self):
         i = 0
         for quad in self.quadList:
@@ -323,6 +389,7 @@ class Compiler:
             quad.print()
             i += 1
 
+    # Print (regular) quadList
     def printQuadruples2(self):
         i = 0
         for quad in self.quadList2:
@@ -338,7 +405,7 @@ class Compiler:
         else:
             return False
 
-    # Method to generate quadruples for factor, term, exp, sub_exp and expression
+    # Method to generate quadruples for linear expressions
     def generateQuad(self, func, level):
         if not self.operatorStack.empty():
             if self.checkLevelToOp(level):
@@ -414,43 +481,95 @@ class Compiler:
         else:
             opAddr = self.semantic.operatorToKey['gotoF']
             condition = self.getMemAddr(self.operandStack.pop())
-            res = self.operandStack.pop()
-            quad = Quadruple(opAddr, condition, None, res)
+            quad = Quadruple(opAddr, condition, None, None)
             self.quadList.append(quad)
-            quad = Quadruple('gotoF', condition, None, res)
+            quad = Quadruple('gotoF', condition, None, None)
             self.quadList2.append(quad)
             self.quadCount += 1
+            self.insertStackJump(self.quadCount - 1)
 
     # Method to generate condition end quadruples, including goto
     def conditionEnd(self):
         end = self.jumpStack.pop()
+        #print("End ", end)
         self.fillGoto(end)
 
     # Method to generate condition else quadruples, including goto
     def conditionElse(self):
+        false = self.jumpStack.pop()
         opAddr = self.semantic.operatorToKey['goto']
         quad = Quadruple(opAddr, None, None, None)
         self.quadList.append(quad)
         quad = Quadruple('goto', None, None, None)
         self.quadList2.append(quad)
         self.quadCount += 1
-        false = self.jumpStack.pop()
-        self.jumpStack.push(self.quadCount - 1)
+        self.insertStackJump(self.quadCount - 1)
+        #print("False ", false)
         self.fillGoto(false)
 
     # Method to generate cicle end quadruples, including goto
     def cicleEnd(self):
         end = self.jumpStack.pop()
         ret = self.jumpStack.pop()
-        print(end,ret)
+        #print("cicleEnd",end,ret)
         opAddr = self.semantic.operatorToKey['goto']
         quad = Quadruple(opAddr, None, None, ret)
         self.quadList.append(quad)
         quad = Quadruple('goto', None, None, ret)
         self.quadList2.append(quad)
         self.quadCount += 1
-        self.jumpStack.push(self.quadCount - 1)
-        #self.fillGoto(end)
+        self.fillGoto(end)
+
+    # Method to save the quadruple position of a module
+    def saveFunctionGoto(self):
+        self.functionDirectory.setQuadPlace(self.localFunc, self.quadCount)
+
+    # Method to generate goto quadruples for a module
+    # def generateFunctionGoto(self):
+    #     ret = self.functionDirectory.getQuadPlace(self.localFunc)
+    #     opAddr = self.semantic.operatorToKey['goto']
+    #     quad = Quadruple(opAddr, None, None, ret)
+    #     self.quadList.append(quad)
+    #     quad = Quadruple('goto', None, None, ret)
+    #     self.quadList2.append(quad)
+    #     self.quadCount += 1
+
+    # Method to fill goto position with current quadruples count
+    def fillGoto(self, pos):
+        #print("Fill ", pos, " quad count ", self.quadCount)
+        op = str(self.quadList[pos].getOperator())
+        if op == '17' or op == '18' or op == '19':
+            self.quadList[pos].setResult(self.quadCount)
+            self.quadList2[pos].setResult(self.quadCount)
+        else:
+            print("#GenerateQuadruple Error: While FILL goto quadruples for pos ", pos)
+            sys.exit()
+
+    # Method to generate dimensioned variable quadruples and verify var is dimensioned variable
+    def generateDimVarQuad(self):
+        if self.currentDimNode.getDimPointer() != None:
+            aux = self.popStackOperand()
+            opAddr = self.semantic.operatorToKey['*']
+            resAddr = self.getTempAddr('float')
+            m = self.currentDimNode.getDimK()
+            quad = Quadruple(opAddr, aux, m, resAddr)
+            self.quadList.append(quad)
+            quad = Quadruple('*', aux, m, resAddr)
+            self.quadList2.append(quad)
+            self.quadCount += 1
+            self.insertStackOperand(resAddr)
+        if self.dim > 1:
+            aux2 = self.popStackOperand()
+            aux1 = self.popStackOperand()
+            opAddr = self.semantic.operatorToKey['+']
+            resAddr = self.getTempAddr('float')
+            m = self.currentDimNode.getDimK()
+            quad = Quadruple(opAddr, aux1, aux2, resAddr)
+            self.quadList.append(quad)
+            quad = Quadruple('+', aux1, aux2, resAddr)
+            self.quadList2.append(quad)
+            self.quadCount += 1
+            self.insertStackOperand(resAddr)
 
     # Method to generate era quadruple
     def generateERA(self, func):
@@ -474,11 +593,11 @@ class Compiler:
             paramType = self.functionDirectory.getParams(self.localFunc)[self.paramCount]
         if resType == paramType:
             parameter = "par" + str(self.paramCount)
-            temp = self.getMemAddr(self.operandStack.pop())
-            #print(parameter, temp)
-            quad = Quadruple(opAddr, temp, None, parameter)
+            tempAddr = self.getMemAddr(self.operandStack.pop())
+            #print(parameter, tempAddr)
+            quad = Quadruple(opAddr, tempAddr, None, parameter)
             self.quadList.append(quad)
-            quad = Quadruple('param', temp, None, parameter)
+            quad = Quadruple('param', tempAddr, None, parameter)
             self.quadList2.append(quad)
             self.quadCount += 1
         else:
@@ -494,16 +613,9 @@ class Compiler:
         quad = Quadruple('gosub', self.localFunc, None, resAddr)
         self.quadList2.append(quad)
         self.quadCount += 1
-
-    # Method to fill goto position with current quadruples count
-    def fillGoto(self, pos):
-        print(self.quadList[pos].getOperator())
-        if self.quadList[pos].getOperator() == '17' or self.quadList[pos].getOperator() == '18' or self.quadList[pos].getOperator() == '19':
-            self.quadList[pos].setResult(self.quadCount)
-            self.quadList2[pos].setResult(self.quadCount)
-        else:
-            print("#GenerateQuadruple Error: While FILL goto quadruples for pos ", pos)
-            #sys.exit()
+        # self.generateFunctionGoto()
+        self.operandStack.push(resAddr)
+        self.typeStack.push(resType)
 
     # STACKS
     # false bottom
@@ -531,11 +643,11 @@ class Compiler:
 
     def insertStackJump(self, jump):
         self.jumpStack.push(jump)
-        self.jumpStack.print()
+        #self.jumpStack.print()
 
     def insertStackDim(self, dim):
         self.dimStack.push(dim)
-        #self.dimStack.print()
+        self.dimStack.print()
 
     # tops
     def topStackOperator(self):

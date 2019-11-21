@@ -11,7 +11,7 @@ c = Compiler()
 // Parser rules
 
 program:
-  ( PROGRAM ID {c.localFunc = 'global'} {c.insertFunctionDirectory(c.localFunc, 'void')} COLON ( variables )* ( modules )* main );
+  ( {c.initialGoto()} PROGRAM ID {c.localFunc = 'global'} {c.insertFunctionDirectory(c.localFunc, 'void')} COLON ( variables )* ( modules )* main );
 f_type
   returns[Object type]:
   ( INT {$type = $INT.text}
@@ -20,9 +20,9 @@ f_type
 variables:
   ( VARIABLES f_type {c.localType = $f_type.text} COLON id_decl {c.insertVarTable(c.localFunc, $id_decl.text, c.localType)} ( COMMA id_decl {c.insertVarTable(c.localFunc, $id_decl.text, c.localType)} )* SEMICOLON );
 id_decl:
-  ( ID {c.insertStackOperand($ID.text)} ( LBRACKET {c.initDimVar()} CTEI {c.insertConstant('int', $CTEI.text)} {c.setDimLowBound($CTEI.text)} COLON CTEI {c.insertConstant('int', $CTEI.text)} {c.setDimHighBound($CTEI.text)} ( COMMA {c.addDimension()} CTEI {c.insertConstant('int', $CTEI.text)} {c.setDimLowBound($CTEI.text)} COLON CTEI {c.insertConstant('int', $CTEI.text)} {c.setDimHighBound($CTEI.text)} )* RBRACKET {c.calculateK()} )? );
+  ( ID ( LBRACKET {c.initDimVar()} CTEI {c.insertConstant('int', $CTEI.text)} {c.setDimLowBound($CTEI.text)} COLON CTEI {c.insertConstant('int', $CTEI.text)} {c.setDimHighBound($CTEI.text)} ( COMMA {c.addDimension()} CTEI {c.insertConstant('int', $CTEI.text)} {c.setDimLowBound($CTEI.text)} COLON CTEI {c.insertConstant('int', $CTEI.text)} {c.setDimHighBound($CTEI.text)} )* RBRACKET {c.calculateK()} )? );
 id_access:
-  ( ID {c.insertStackOperand($ID.text)} ( LBRACKET {c.dimVarBegin()} exp {c.generateQuad(c.localFunc, 'exp')} ( COMMA {c.nextDimension()} exp {c.generateQuad(c.localFunc, 'exp')} )* RBRACKET {c.dimVarEnd()} )? );
+  ( ID ( LBRACKET {c.dimVarBegin($ID.text)} exp {c.generateDimVarQuad()} ( COMMA {c.nextDimension($ID.text)} exp {c.generateDimVarQuad()} )* RBRACKET {c.dimVarEnd($ID.text)} )* );
 modules:
   ( ID {c.localFunc = $ID.text} ISFUNCTION ( VOID {c.localType = 'void'} {c.insertFunctionDirectory($ID.text, 'void')} | f_type {c.localType = $f_type.text} {c.insertFunctionDirectory($ID.text, $f_type.text)} {c.insertVarTable('global', $ID.text, $f_type.text)} ) FUNC LPRACKET ( f_type {c.localType = $f_type.text} ID {c.insertVarTable(c.localFunc, $ID.text, $f_type.text)} {c.insertParam(c.localFunc, $ID.text, $f_type.text)} ( COMMA f_type {c.localType = $f_type.text} ID {c.insertVarTable(c.localFunc, $ID.text, $f_type.text)} {c.insertParam(c.localFunc, $ID.text, $f_type.text)} )* )? RPRACKET ( variables )* {c.moduleBegin()} block {c.moduleEnd()} );
 main:
@@ -45,7 +45,7 @@ cicle:
 reading:
   ( READ LPRACKET ( STRING {c.insertStackOperand($STRING.text)} {c.insertStackType('char[]')} | expression+ ( COMMA expression )* )? RPRACKET SEMICOLON {c.generateCommonQuad('read')} );
 writing:
-  ( PRINT LPRACKET ( STRING {c.insertStackOperand($STRING.text)} {c.insertStackType('char[]')} | expression+ ( COMMA expression )* )? RPRACKET SEMICOLON {c.generateCommonQuad('print')} );
+  ( PRINT LPRACKET ( STRING {$type = 'char'} {$val = c.insertConstant($type, $STRING.text)} {c.insertStackOperand($val)} {c.insertStackType($type)} | expression+ ( COMMA expression )* )? RPRACKET SEMICOLON {c.generateCommonQuad('print')} );
 call_module
   returns[Object type, val]:
   ( r_return | rnom | rexp | rgamma | points | lines | text | barplot | piechart | xyplot | densityplot | histogram | sin | cos | tan | asin | acos | atan | atan2 | log | log10 | exponent | f_max | f_min | f_range | f_sum | diff | prod | mean | median | quantile | weighedmean | rank | var | sd | cor | cov | f_round | transpose | diagonal | ginv | rowsum | colsum | load | data | library | rpois | rweibull | rbinom | rgeom | runif | ( ID {c.generateERA($ID.text)} {c.functionDirectory.functionExists($ID.text)} {c.localFunc = $ID.text} {$val = c.getModuleReturnAddr($ID.text)} {$type = c.getModuleReturnType($ID.text)} LPRACKET {c.insertFalseBottom()} ( exp {c.generateActionParameter()} ( COMMA {c.moveParameterPointer()} exp {c.generateActionParameter()} )* )? RPRACKET {c.removeFalseBottom()} {c.resetParameterPointer()} ) );
@@ -59,14 +59,14 @@ term:
   ( factor {c.generateQuad(c.localFunc, 'factor')} ( ( DIVISION {c.insertStackOperator($DIVISION.text)} | TIMES {c.insertStackOperator($TIMES.text)} )+ factor+ {c.generateQuad(c.localFunc, 'factor')} )* );
 factor:
   ( LPRACKET {c.insertFalseBottom()} expression RPRACKET {c.removeFalseBottom()}
-  | ( PLUS | MINUS )? var_cte {c.insertStackOperand($var_cte.text)} {c.insertStackType($var_cte.type)} );
+  | ( PLUS | MINUS )? var_cte );
 var_cte
   returns[Object type, val]:
-  ( id_access {$type = c.getVarType(c.localFunc, $id_access.text)} {$val = c.getVarVal(c.localFunc, $id_access.text)}
-  | CTEI {$type = 'int'} {$val = c.insertConstant($type, $CTEI.text)}
-  | CTEF {$type = 'float'} {$val = c.insertConstant($type, $CTEF.text)}
-  | CTEC {$type = 'char'} {$val = c.insertConstant($type, $CTEC.text)}
-  | call_module {$type = $call_module.type} {$val = $call_module.val} );
+  ( call_module {$type = $call_module.type} {$val = $call_module.val}
+  | id_access {$type = c.getVarType(c.localFunc, $id_access.text)} {$val = c.getVarVal(c.localFunc, $id_access.text)} {c.insertStackOperand($id_access.text)} {c.insertStackType($type)}
+  | CTEI {$type = 'int'} {$val = c.insertConstant($type, $CTEI.text)} {c.insertStackOperand($CTEI.text)} {c.insertStackType($type)}
+  | CTEF {$type = 'float'} {$val = c.insertConstant($type, $CTEF.text)} {c.insertStackOperand($CTEF.text)} {c.insertStackType($type)}
+  | CTEC {$type = 'char'} {$val = c.insertConstant($type, $CTEC.text)} {c.insertStackOperand($CTEC.text)} {c.insertStackType($type)} );
 r_return:
   ( RETURN expression SEMICOLON {c.generateCommonQuad('return')} );
 rnom:
