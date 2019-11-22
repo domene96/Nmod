@@ -21,7 +21,7 @@ def main(argv):
     parser = NmodParser(stream)
     parser._listeners = [NmodErrorListener()]
     tree = parser.program()
-    #print(tree.toStringTree(recog=parser))
+    # print(tree.toStringTree(recog=parser))
 
 if __name__ == '__main__':
     main(sys.argv)

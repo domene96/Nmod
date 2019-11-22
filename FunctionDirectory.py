@@ -63,7 +63,8 @@ class VariableTable:
         if self.varExists(var):
             return self.varTable[var][1]
         else:
-            print("#VariableDeclaration Error: The variable ",var," is not defined")
+            print("#VariableDeclaration Warning: The variable ",var," is not defined")
+            return -1
 
     # Method to set the address of a given variable
     def setAddress(self, var, addr):
@@ -106,7 +107,7 @@ class VariableTable:
             if self.varExists(var):
                 return self.varTable[var][4]
             else:
-                print("1#VariableDeclaration Error: The variable ",var," is not defined")
+                print("#VariableAccess Warning: The variable ",var," is not defined")
         else:
             print("#VariableDeclaration Error: The variable ",var," is not dimensioned")
 
