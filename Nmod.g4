@@ -18,7 +18,7 @@ f_type
   | FLOAT {$type = $FLOAT.text}
   | CHAR {$type = $CHAR.text} );
 variables:
-  ( VARIABLES f_type {c.localType = $f_type.text} COLON id_decl {c.insertVarTable(c.localFunc, $id_decl.text, c.localType)} ( COMMA id_decl {c.insertVarTable(c.localFunc, $id_decl.text, c.localType)} )* SEMICOLON );
+  ( VARIABLES f_type {c.localType = $f_type.text} COLON id_decl {c.insertVarTable(c.localFunc, $id_decl.text, c.localType)} ( COMMA id_decl {c.insertVarTable(c.localFunc, $id_decl.text, c.localType)} )* );
 id_decl:
   ( ID ( LBRACKET {c.initDimVar()} CTEI {c.insertConstant('int', $CTEI.text)} {c.setDimLowBound($CTEI.text)} COLON CTEI {c.insertConstant('int', $CTEI.text)} {c.setDimHighBound($CTEI.text)} ( COMMA {c.addDimension()} CTEI {c.insertConstant('int', $CTEI.text)} {c.setDimLowBound($CTEI.text)} COLON CTEI {c.insertConstant('int', $CTEI.text)} {c.setDimHighBound($CTEI.text)} )* RBRACKET {c.calculateK()} )? );
 id_access:
@@ -37,19 +37,19 @@ statute:
   | cicle
   | call_module );
 assignment:
-  ( id_access {c.insertStackOperand($id_access.text)} EQUALS {c.insertStackOperator($EQUALS.text)} exp {c.generateAssignmentQuad()} SEMICOLON );
+  ( id_access EQUALS {c.insertStackOperator($EQUALS.text)} exp {c.generateAssignmentQuad()} );
 condition:
   ( IF LPRACKET expression RPRACKET {c.conditionStart('condition')} block ( ELSE {c.conditionElse()} block )? {c.conditionEnd()} );
 cicle:
   ( WHILE {c.insertStackJump(c.quadCount)} LPRACKET expression RPRACKET {c.conditionStart('cicle')} block {c.cicleEnd()} );
 reading:
-  ( READ LPRACKET ( STRING {c.insertStackOperand($STRING.text)} {c.insertStackType('char[]')} | expression+ ( COMMA expression )* )? RPRACKET SEMICOLON {c.generateCommonQuad('read')} );
+  ( READ LPRACKET ( STRING {c.insertStackOperand($STRING.text)} {c.insertStackType('char[]')} | expression ( COMMA expression )* )? RPRACKET {c.generateCommonQuad('read')} );
 writing
   returns[Object val]:
-  ( PRINT LPRACKET ( STRING {$val = c.insertConstant('char', $STRING.text)} {c.insertStackOperand($val)} {c.insertStackType('char')} | expression+ ( COMMA expression )* )? RPRACKET SEMICOLON {c.generateCommonQuad('print')} );
+  ( PRINT LPRACKET ( STRING {$val = c.insertConstant('char', $STRING.text)} {c.insertStackOperand($val)} {c.insertStackType('char')} | expression ( COMMA expression )* )? RPRACKET {c.generateCommonQuad('print')} );
 call_module
   returns[Object type, val]:
-  ( r_return | rnom | rexp | rgamma | points | lines | text | barplot | piechart | xyplot | densityplot | histogram | sin | cos | tan | asin | acos | atan | atan2 | log | log10 | exponent | f_max | f_min | f_range | f_sum | diff | prod | mean | median | quantile | weighedmean | rank | var | sd | cor | cov | f_round | transpose | diagonal | ginv | rowsum | colsum | load | data | library | rpois | rweibull | rbinom | rgeom | runif | ( ID {c.generateERA($ID.text)} {c.functionDirectory.functionExists($ID.text)} {c.localFunc = $ID.text} {$val = c.getModuleReturnAddr($ID.text)} {$type = c.getModuleReturnType($ID.text)} LPRACKET {c.insertFalseBottom()} ( exp {c.generateActionParameter()} ( COMMA {c.moveParameterPointer()} exp {c.generateActionParameter()} )* )? RPRACKET {c.removeFalseBottom()} {c.resetParameterPointer()} ) );
+  ( r_return | rnom | rexp | rgamma | points | lines | text | barplot | piechart | xyplot | densityplot | histogram | sin | cos | tan | asin | acos | atan | atan2 | log | log10 | exponent | f_max | f_min | f_range | f_sum | diff | prod | mean | median | quantile | weighedmean | rank | var | sd | cor | cov | f_round | transpose | diagonal | ginv | rowsum | colsum | load | data | library | rpois | rweibull | rbinom | rgeom | runif | ID {c.generateERA($ID.text)} {c.functionDirectory.functionExists($ID.text)} {c.localFunc = $ID.text} {$val = c.getModuleReturnAddr($ID.text)} {$type = c.getModuleReturnType($ID.text)} LPRACKET {c.insertFalseBottom()} ( exp {c.generateActionParameter()} ( COMMA {c.moveParameterPointer()} exp {c.generateActionParameter()} )* )? RPRACKET {c.removeFalseBottom()} {c.resetParameterPointer()} );
 expression:
   ( sub_exp {c.generateQuad(c.localFunc, 'sub_exp')} ( ( AND {c.insertStackOperator($AND.text)} | OR {c.insertStackOperator($OR.text)} )+ sub_exp+ {c.generateQuad(c.localFunc, 'sub_exp')} )* );
 sub_exp:
@@ -64,113 +64,114 @@ factor:
 var_cte
   returns[Object type, val]:
   ( call_module {$type = $call_module.type} {$val = $call_module.val}
-  | id_access {$type = c.getVarType(c.localFunc, $id_access.text)} {$val = c.getVarVal(c.localFunc, $id_access.text)} {c.insertStackOperand($id_access.text)} {c.insertStackType($type)}
+  | id_access {$type = c.getVarType(c.localFunc, $id_access.text)} {$val = c.getVarVal(c.localFunc, $id_access.text)} {c.insertStackType($type)}
   | CTEI {$type = 'int'} {$val = c.insertConstant($type, $CTEI.text)} {c.insertStackOperand($CTEI.text)} {c.insertStackType($type)}
   | CTEF {$type = 'float'} {$val = c.insertConstant($type, $CTEF.text)} {c.insertStackOperand($CTEF.text)} {c.insertStackType($type)}
   | CTEC {$type = 'char'} {$val = c.insertConstant($type, $CTEC.text)} {c.insertStackOperand($CTEC.text)} {c.insertStackType($type)} );
 r_return:
-  ( RETURN expression SEMICOLON {c.generateCommonQuad('return')} );
-rnom:
-  ( RNOM LPRACKET var_cte COMMA var_cte COMMA var_cte COMMA var_cte RPRACKET SEMICOLON );
+  ( RETURN expression {c.generateCommonQuad('return')} );
+rnom
+  returns[Object type, val]:
+  ( RNOM {c.generateSpecialERA($RNOM.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($RNOM.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($RNOM.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($RNOM.text)} );
 rexp:
-  ( REXP LPRACKET var_cte COMMA var_cte RPRACKET SEMICOLON );
+  ( REXP {c.generateSpecialERA($REXP.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($REXP.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($REXP.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($REXP.text)} );
 rgamma:
-  ( RGAMMA LPRACKET var_cte COMMA var_cte COMMA var_cte RPRACKET SEMICOLON );
+  ( RGAMMA {c.generateSpecialERA($RGAMMA.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($RGAMMA.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($RGAMMA.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($RGAMMA.text)} );
 points:
-  ( POINTS LPRACKET var_cte COMMA var_cte RPRACKET SEMICOLON );
+  ( POINTS {c.generateSpecialERA($POINTS.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($POINTS.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($POINTS.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($POINTS.text)} );
 lines:
-  ( LINES LPRACKET var_cte COMMA var_cte RPRACKET SEMICOLON );
+  ( LINES {c.generateSpecialERA($LINES.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($LINES.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($LINES.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($LINES.text)} );
 text:
-  ( TEXT LPRACKET CTEI COMMA CTEI COMMA id_decl RPRACKET SEMICOLON );
+  ( TEXT LPRACKET CTEI COMMA CTEI COMMA id_access RPRACKET );
 barplot:
-  ( BARPLOT LPRACKET var_cte COMMA var_cte COMMA var_cte COMMA var_cte RPRACKET SEMICOLON );
+  ( BARPLOT {c.generateSpecialERA($BARPLOT.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($BARPLOT.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($BARPLOT.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($BARPLOT.text)} );
 piechart:
-  ( PIECHART LPRACKET var_cte COMMA var_cte COMMA var_cte COMMA var_cte RPRACKET SEMICOLON );
+  ( PIECHART {c.generateSpecialERA($PIECHART.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($PIECHART.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($PIECHART.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($PIECHART.text)} );
 xyplot:
-  ( XYPLOT LPRACKET var_cte COMMA var_cte COMMA var_cte COMMA var_cte RPRACKET SEMICOLON );
+  ( XYPLOT {c.generateSpecialERA($XYPLOT.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($XYPLOT.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($XYPLOT.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($XYPLOT.text)} );
 densityplot:
-  ( DENSITYPLOT LPRACKET var_cte COMMA var_cte COMMA var_cte COMMA var_cte RPRACKET SEMICOLON );
+  ( DENSITYPLOT {c.generateSpecialERA($DENSITYPLOT.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($DENSITYPLOT.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($DENSITYPLOT.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($DENSITYPLOT.text)} );
 histogram:
-  ( HISTOGRAM LPRACKET var_cte COMMA var_cte COMMA var_cte COMMA var_cte RPRACKET SEMICOLON );
+  ( HISTOGRAM {c.generateSpecialERA($HISTOGRAM.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($HISTOGRAM.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($HISTOGRAM.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($HISTOGRAM.text)} );
 sin:
-  ( SIN LPRACKET expression RPRACKET SEMICOLON );
+  ( SIN LPRACKET exp RPRACKET );
 cos:
-  ( COS LPRACKET expression RPRACKET SEMICOLON );
+  ( COS LPRACKET exp RPRACKET );
 tan:
-  ( TAN LPRACKET expression RPRACKET SEMICOLON );
+  ( TAN LPRACKET exp RPRACKET );
 asin:
-  ( ASIN LPRACKET expression RPRACKET SEMICOLON );
+  ( ASIN LPRACKET exp RPRACKET );
 acos:
-  ( ACOS LPRACKET expression RPRACKET SEMICOLON );
+  ( ACOS LPRACKET exp RPRACKET );
 atan:
-  ( ATAN LPRACKET expression RPRACKET SEMICOLON );
+  ( ATAN LPRACKET exp RPRACKET );
 atan2:
-  ( ATAN2 LPRACKET expression RPRACKET SEMICOLON );
+  ( ATAN2 LPRACKET exp RPRACKET );
 log:
-  ( LOG LPRACKET expression RPRACKET SEMICOLON );
+  ( LOG LPRACKET exp RPRACKET );
 log10:
-  ( LOG10 LPRACKET expression RPRACKET SEMICOLON );
+  ( LOG10 LPRACKET exp RPRACKET );
 exponent:
-  ( EXPONENT LPRACKET expression RPRACKET SEMICOLON );
+  ( EXPONENT LPRACKET exp RPRACKET );
 f_max:
-  ( MAX LPRACKET expression ( COMMA expression )* RPRACKET SEMICOLON );
+  ( MAX {c.generateSpecialERA($MAX.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($MAX.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($MAX.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($MAX.text)} );
 f_min:
-  ( MIN LPRACKET expression ( COMMA expression )* RPRACKET SEMICOLON );
+  ( MIN {c.generateSpecialERA($MIN.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($MIN.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($MIN.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($MIN.text)} );
 f_range:
-  ( RANGE LPRACKET expression ( COMMA expression )* RPRACKET SEMICOLON );
+  ( RANGE {c.generateSpecialERA($RANGE.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($RANGE.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($RANGE.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($RANGE.text)} );
 f_sum:
-  ( SUM LPRACKET expression ( COMMA expression )* RPRACKET SEMICOLON );
+  ( SUM {c.generateSpecialERA($SUM.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($SUM.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($SUM.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($SUM.text)} );
 diff:
-  ( DIFF LPRACKET id_decl COMMA CTEI RPRACKET SEMICOLON );
+  ( DIFF LPRACKET exp COMMA CTEI RPRACKET );
 prod:
-  ( PROD LPRACKET expression ( COMMA expression )* RPRACKET SEMICOLON );
+  ( PROD {c.generateSpecialERA($PROD.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($PROD.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($PROD.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($PROD.text)} );
 mean:
-  ( MEAN LPRACKET id_decl RPRACKET SEMICOLON );
+  ( MEAN LPRACKET exp RPRACKET );
 median:
-  ( MEDIAN LPRACKET id_decl RPRACKET SEMICOLON );
+  ( MEDIAN LPRACKET exp RPRACKET );
 quantile:
-  ( QUANTILE LPRACKET expression ( COMMA expression )* RPRACKET SEMICOLON );
+  ( QUANTILE {c.generateSpecialERA($QUANTILE.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($QUANTILE.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($QUANTILE.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($QUANTILE.text)} );
 weighedmean:
-  ( WEIGHEDMEAN LPRACKET expression ( COMMA expression )* RPRACKET SEMICOLON );
+  ( WEIGHEDMEAN {c.generateSpecialERA($WEIGHEDMEAN.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($WEIGHEDMEAN.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($WEIGHEDMEAN.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($WEIGHEDMEAN.text)} );
 rank:
-  ( RANK LPRACKET id_decl COMMA ZERO RPRACKET SEMICOLON
-  | RANK LPRACKET id_decl COMMA ONE RPRACKET SEMICOLON );
+  ( RANK LPRACKET exp COMMA ZERO RPRACKET
+  | RANK LPRACKET exp COMMA ONE RPRACKET );
 var:
-  ( VARIANCE LPRACKET var_cte COMMA var_cte RPRACKET SEMICOLON );
+  ( VARIANCE {c.generateSpecialERA($VARIANCE.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($VARIANCE.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($VARIANCE.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($VARIANCE.text)} );
 sd:
-  ( SD LPRACKET var_cte RPRACKET SEMICOLON );
+  ( SD {c.generateSpecialERA($SD.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($SD.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($SD.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($SD.text)} );
 cor:
-  ( COR LPRACKET var_cte COMMA var_cte COMMA ( PEARSON | KENDALL | SPEARMAN ) RPRACKET SEMICOLON );
+  ( COR LPRACKET ( PEARSON | KENDALL | SPEARMAN ) RPRACKET );
 cov:
-  ( COV LPRACKET var_cte RPRACKET SEMICOLON );
+  ( COV {c.generateSpecialERA($COV.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($COV.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($COV.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($COV.text)} );
 f_round:
-  ( ROUND LPRACKET var_cte ( COMMA var_cte )* RPRACKET SEMICOLON );
+  ( ROUND {c.generateSpecialERA($ROUND.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($ROUND.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($ROUND.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($ROUND.text)} );
 transpose:
-  ( TRANSPOSE LPRACKET var_cte RPRACKET SEMICOLON );
+  ( TRANSPOSE {c.generateSpecialERA($TRANSPOSE.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($TRANSPOSE.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($TRANSPOSE.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($TRANSPOSE.text)} );
 diagonal:
-  ( DIAGONAL LPRACKET var_cte RPRACKET SEMICOLON );
+  ( DIAGONAL {c.generateSpecialERA($DIAGONAL.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($DIAGONAL.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($DIAGONAL.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($DIAGONAL.text)} );
 ginv:
-  ( GINV LPRACKET var_cte RPRACKET SEMICOLON );
+  ( GINV {c.generateSpecialERA($GINV.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($GINV.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($GINV.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($GINV.text)} );
 rowsum:
-  ( ROWSUM LPRACKET var_cte RPRACKET SEMICOLON );
+  ( ROWSUM {c.generateSpecialERA($ROWSUM.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($ROWSUM.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($ROWSUM.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($ROWSUM.text)} );
 colsum:
-  ( COLSUM LPRACKET var_cte RPRACKET SEMICOLON );
+  ( COLSUM {c.generateSpecialERA($COLSUM.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($COLSUM.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($COLSUM.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($COLSUM.text)} );
 load:
-  ( LOAD LPRACKET var_cte ( COMMA var_cte )* RPRACKET SEMICOLON );
+  ( LOAD {c.generateSpecialERA($LOAD.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($LOAD.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($LOAD.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($LOAD.text)} );
 data:
-  ( DATA LPRACKET expression ( COMMA expression )* RPRACKET SEMICOLON );
+  ( DATA {c.generateSpecialERA($DATA.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($DATA.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($DATA.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($DATA.text)} );
 library:
-  ( LIBRARY LPRACKET ( STRING | var_cte ) RPRACKET SEMICOLON );
+  ( LIBRARY LPRACKET ( STRING | id_access ) RPRACKET );
 rpois:
-  ( RPOIS LPRACKET var_cte COMMA var_cte COMMA var_cte RPRACKET SEMICOLON );
+  ( RPOIS {c.generateSpecialERA($RPOIS.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($RPOIS.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($RPOIS.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($RPOIS.text)} );
 rweibull:
-  ( RWEIBULL LPRACKET var_cte RPRACKET SEMICOLON );
+  ( RWEIBULL {c.generateSpecialERA($RWEIBULL.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($RWEIBULL.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($RWEIBULL.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($RWEIBULL.text)} );
 rbinom:
-  ( RBINOM LPRACKET var_cte COMMA var_cte COMMA var_cte RPRACKET SEMICOLON );
+  ( RBINOM {c.generateSpecialERA($RBINOM.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($RBINOM.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($RBINOM.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($RBINOM.text)} );
 rgeom:
-  ( RGEOM LPRACKET var_cte COMMA var_cte RPRACKET SEMICOLON );
+  ( RGEOM {c.generateSpecialERA($RGEOM.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($RGEOM.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($RGEOM.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($RGEOM.text)} );
 runif:
-  ( RUNIF LPRACKET var_cte COMMA var_cte RPRACKET SEMICOLON );
+  ( RUNIF {c.generateSpecialERA($RUNIF.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($RUNIF.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($RUNIF.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($RUNIF.text)} );
 
 // Lexer rules
 

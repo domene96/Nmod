@@ -190,7 +190,7 @@ class DimensionNode:
 class ActivationRecord:
     # Initialize Activation Record
     def __init__(self, funcMem):
-        # Local memory for current function, type: Memory
+        # Local memory for current function
         self.eraMem = funcMem
 
     # Print activation record

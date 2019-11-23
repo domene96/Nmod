@@ -2,6 +2,7 @@
 
 # Memory Structure for Nmod
 class Memory:
+    # Initialize memory
     def __init__(self, name, initAddr, finalAddr):
         # Global / Local / Constant
         self.name = name
@@ -55,11 +56,11 @@ class Memory:
     def setValueAtAddress(self, addr, val):
         if addr > self.initAddr:
             if addr < self.initAddr + self.slotsPerType:
-                intMem[addr] = val
+                self.intMem[addr] = val
             elif addr < self.initAddr + self.slotsPerType * 2:
-                floatMem[addr] = val
+                self.floatMem[addr] = val
             elif addr < self.initAddr + self.slotsPerType * 3:
-                charMem[addr] = val
+                self.charMem[addr] = val
             else:
                 print("#MemoryManagement Error: upper out of bounds ", addr, " address")
         else:
