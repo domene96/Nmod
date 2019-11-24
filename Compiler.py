@@ -4,7 +4,6 @@ import sys
 from Error import *
 from Structures import *
 from Semantic import *
-from Memory import *
 from FunctionDirectory import *
 from VirtualMachine import *
 
@@ -19,17 +18,12 @@ class Compiler:
         self.error = Error("", False, False)
         # Semantics
         self.semantic = Semantic()
-        # Memory
-        self.globalMem = Memory("Global", 1000, 9999)
-        self.localMem = Memory("Local", 10000, 29999)
-        self.constMem = Memory("Constant", 30000, 39999)
         # Procedures (Functions)
         self.functionDirectory = FunctionDirectory()
+        self.localMemHandler = {}
         # Variables
-        self.globals = VariableTable()
         self.localFunc = ''
         self.localType = ''
-        self.constants = {}
         # Dimensioned Variables
         self.totalSize = 0
         self.r = 1
@@ -49,17 +43,24 @@ class Compiler:
         self.jumpStack = Stack()
         self.dimStack = Stack()
         # Debug flag
-        self.debug = 2 # 0 Mem or FuncDir or Var error, 1 currently working, 2 print funcDir, 3 print quads, 4 resolved issues, 5 print stacks on insertion, 6 other warnings/info
+        self.debug = 3 # 0 Mem or FuncDir or Var error, 1 currently working, 2 print funcDir, 3 print quads, 4 resolved issues, 5 print memory before VM and stacks upon insertion, 6 other warnings/info
 
     # MEMORY
     # Get memory address of id
     def getMemAddr(self, id):
+        # Check local memory
         if self.functionDirectory.getVarTable(self.localFunc).varExists(id):
             return self.functionDirectory.getVarTable(self.localFunc).getAddress(id)
+        # Check global memory
         elif self.functionDirectory.getVarTable('global').varExists(id):
             return self.functionDirectory.getVarTable('global').getAddress(id)
-        elif id in self.constants:
-            return self.constants[id][0]
+        # Check constant memory
+        elif self.functionDirectory.constMem.findVal(id, 'int') != False:
+            return self.functionDirectory.constMem.findVal(id, 'int')
+        elif self.functionDirectory.constMem.findVal(id, 'float') != False:
+            return self.functionDirectory.constMem.findVal(id, 'float')
+        elif self.functionDirectory.constMem.findVal(id, 'char') != False:
+            return self.functionDirectory.constMem.findVal(id, 'char')
         else:
             if self.debug >= 6:
                 print("#COMPILATION WARNING MemoryManagement: Attempting to find ", id, " was not found")
@@ -67,7 +68,7 @@ class Compiler:
 
     # Temporal address to store quad result
     def getTempAddr(self, type):
-        return self.localMem.nextMemoryDirection(type)
+        return self.functionDirectory.localMem.nextMemoryDirection(type)
 
     # PROCEDURES
     # Insert function and type to function directory
@@ -82,9 +83,11 @@ class Compiler:
     # CONSTANTS
     # Insert constant variable to constant memory
     def insertConstant(self, type, val):
-        if val not in self.constants:
-            self.constants[val] = [self.constMem.nextMemoryDirection(type), val]
-            return self.constants[val][0]
+        if self.debug >= 4:
+            print("add ct ", type, val)
+        if self.functionDirectory.constMem.findVal(val, type) == False:
+            addr = self.functionDirectory.constMem.nextMemoryDirection(type)
+            self.functionDirectory.constMem.setValueAtAddress(addr, val)
         else:
             msg = "#COMPILATION INFO ConstantDeclaration: The constant " + str(val) + " exist"
             self.error = Error(msg, False, False)
@@ -105,10 +108,12 @@ class Compiler:
         if size == 0:
             size = 1
         if self.functionDirectory.functionExists(func):
+            if self.debug >= 4:
+                print("add var ", id, self.localType, size)
             if func == 'global':
-                memDir = self.globalMem.reserveMemoryAddresses(self.localType, size)
+                memDir = self.functionDirectory.globalMem.reserveMemoryAddresses(self.localType, size)
             else:
-                memDir = self.localMem.reserveMemoryAddresses(self.localType, size)
+                memDir = self.functionDirectory.localMem.reserveMemoryAddresses(self.localType, size)
             self.functionDirectory.getVarTable(func).addVariable(id, type, memDir, None, size, None)
         else:
             msg = "#COMPILATION ERROR FunctionDeclaration: The function " + str(func) + " is not defined"
@@ -366,8 +371,9 @@ class Compiler:
         self.popStackDim()
 
     # MAIN
-    # Generate initial goto (to start at main)
+    #  Start at main
     def initialGoto(self):
+        # Generate initial goto
         opAddr = self.semantic.operatorToKey['goto']
         quad = Quadruple(opAddr, None, None, None)
         self.quadList.append(quad)
@@ -383,6 +389,10 @@ class Compiler:
 
     # Debugging prints and VM instantiation
     def mainEnd(self):
+        if self.debug >= 1:
+            self.functionDirectory.globalMem.printMemory()
+            print(self.localMemHandler)
+            self.functionDirectory.constMem.printMemory()
         if self.debug >= 2:
             self.functionDirectory.print()
             if self.debug >= 3:
@@ -391,19 +401,26 @@ class Compiler:
                 print("-------------")
         # Execute virtual machine
         vm = VirtualMachine()
-        vm.debug = self.debug
+        # vm.debug = self.debug
         vm.functionDirectory = self.functionDirectory
-        vm.fillMem()
+        vm.localMemHandler = self.localMemHandler
         vm.run(self.quadList)
+        if self.debug >= 0:
+            print("Goodbye :)")
 
     # MODULES
     # Beginning of module, clear local memory
     def moduleBegin(self):
-        self.localMem.clearMemory()
+        if self.debug >= 4:
+            print(self.localFunc)
+            self.functionDirectory.localMem.printMemory()
+        self.localMemHandler[self.localFunc] = self.functionDirectory.localMem
+        self.functionDirectory.localMem.clearMemory()
         self.saveFunctionGoto()
 
-    # End of module, generate endproc
+    # End of module
     def moduleEnd(self):
+        # Generate endproc
         opAddr = self.semantic.operatorToKey['endproc']
         quad = Quadruple(opAddr, None, None, None)
         self.quadList.append(quad)

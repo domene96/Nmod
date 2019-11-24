@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from Structures import *
+from Memory import *
 
 # Variable Table implementation
 class VariableTable:
@@ -63,8 +64,7 @@ class VariableTable:
         if self.varExists(var):
             return self.varTable[var][1]
         else:
-            sys.exit("#VariableDeclaration Warning: The variable " + str(var) + " is not defined")
-            return -1
+            sys.exit("#VariableDeclaration Error: The variable " + str(var) + " is not defined")
 
     # Method to set the address of a given variable
     def setAddress(self, var, addr):
@@ -147,6 +147,10 @@ class FunctionDirectory:
             # [3] = quad place
             # [4] = memory direction
             # [5] = size of procedure stack
+        # Memory
+        self.globalMem = Memory("Global", 1000, 9999)
+        self.localMem = Memory("Local", 10000, 29999)
+        self.constMem = Memory("Constant", 30000, 39999)
 
     # Method to check if function name exists in function directory
     def functionExists(self, func):

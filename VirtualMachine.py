@@ -12,20 +12,14 @@ class VirtualMachine:
     def __init__(self):
         # Errors
         self.error = Error("", False, False)
-        # Memory
-        self.globalMem = Memory("Global", 1000, 9999)
-        self.localMem = Memory("Local", 10000, 29999)
-        self.constMem = Memory("Constant", 30000, 39999)
         # Instruction Pointer
         self.instructionPointer = 0
         self.quadruples = None
         # Structures for processing
-        self.functionDirectory = FunctionDirectory()
-        self.localMemHandler = Stack()
-        self.functionStack = Stack()
-        self.returnStack = Stack()
+        self.functionDirectory = FunctionDirectory() # Function Directory plus Global and Constant Memory
+        self.localMemHandler = {} # Local memory
         # Debug flag
-        self.debug = 0 # Not passed by compiler: 0 nothing, 1 count iterations, 2 print results, 3 print quad
+        self.debug = 3 # Not passed by compiler: 0 nothing, 1 print quad count, 2 print results, 3 print quad
 
     # Run virtual machine
     def run(self, quads):
@@ -71,26 +65,14 @@ class VirtualMachine:
                 sys.exit('#RUNTIME ERROR VirtualMachineExecution: invalid quadruple: ', quad.print())
             self.instructionPointer += 1
 
-    # Method to fill VM memory
-    def fillMem(self):
-        # Fill Global Memory
-        for x in range(1000, 9999):
-            self.globalMem.setValueAtAddress(x, 0)
-        # Fill Local Memory
-        for x in range(10000, 29999):
-            self.localMem.setValueAtAddress(x, 0)
-        # Fill Constant Memory
-        for x in range(30000, 39999):
-            self.constMem.setValueAtAddress(x, 0)
-
     # Method to get value from memory address
     def getValAtMem(self, addr):
         if addr >= 1000 and addr <= 9999:
-            return self.globalMem.getValueAtAddress(addr)
+            return self.functionDirectory.globalMem.getValueAtAddress(addr)
         elif addr >= 10000 and addr <= 29999:
-            return self.localMem.getValueAtAddress(addr)
+            return self.functionDirectory.localMem.getValueAtAddress(addr)
         elif addr >= 30000 and addr <= 39999:
-            return self.constMem.getValueAtAddress(addr)
+            return self.functionDirectory.constMem.getValueAtAddress(addr)
         elif addr == -1:
             return self.returnMem.pop()
         else:
@@ -99,11 +81,11 @@ class VirtualMachine:
     # Method to set value at memory address
     def setValAtMem(self, addr, val):
         if addr >= 1000 and addr <= 9999:
-            self.globalMem.setValueAtAddress(addr, val)
+            self.functionDirectory.globalMem.setValueAtAddress(addr, val)
         elif addr >= 10000 and addr <= 29999:
-            self.localMem.setValueAtAddress(addr, val)
+            self.functionDirectory.localMem.setValueAtAddress(addr, val)
         elif addr >= 30000 and addr <= 39999:
-            self.constMem.setValueAtAddress(addr, val)
+            self.functionDirectory.constMem.setValueAtAddress(addr, val)
         elif addr == -1:
             self.returnMem.push(val)
         else:
@@ -129,6 +111,7 @@ class VirtualMachine:
         resAddr = quad.getResult()
         valAddr = quad.getLeftOperand()
         res = self.getValAtMem(valAddr)
+        print(resAddr, valAddr, res)
         if res == None:
             sys.exit("#RUNTIME ERROR AssignOperation: cannot perform assignment operation")
         self.setValAtMem(resAddr, res)
@@ -145,19 +128,21 @@ class VirtualMachine:
         if leftVal == None or rightVal == None:
             sys.exit("#RUNTIME ERROR VariableAccess Error: cannot perform arithmetic operation")
         opAddr = quad.getOperator()
+        if self.debug >= 2:
+            print(opAddr, leftVal, rightVal, resAddr)
         if opAddr == 6:
-            res = float(leftVal) + float(rightVal)
+            res = int(leftVal) + int(rightAddr)
             self.setValAtMem(resAddr, res)
         elif opAddr == 7:
-            res = float(leftVal) - float(rightVal)
+            res = int(leftVal) - int(rightAddr)
             self.setValAtMem(resAddr, res)
         elif opAddr == 8:
-            res = float(leftVal) * float(rightVal)
+            res = int(leftVal) * int(rightAddr)
             self.setValAtMem(resAddr, res)
         elif opAddr == 9:
             if leftVal == 0 or rightVal == 0:
                 sys.exit("#RUNTIME ERROR VariableAccess: cannot perform division by 0")
-            res = float(leftVal) / float(rightVal)
+            res = int(leftVal) / int(rightAddr)
             self.setValAtMem(resAddr, res)
         else:
             sys.exit("#RUNTIME ERROR VariableAccess: cannot perform arithmetic operation")
@@ -223,9 +208,12 @@ class VirtualMachine:
         leftVal = self.getValAtMem(leftAddr)
         rightVal = self.getValAtMem(rightAddr)
         resVal = self.getValAtMem(resAddr)
-        # print('revise ', leftVal, rightVal, resVal)
         if resVal >= leftVal and resVal <= rightVal:
+            if self.debug >= 2:
+                print('revise ', leftVal, rightVal, resVal, True)
             return True
+        if self.debug >= 2:
+            print('revise ', leftVal, rightVal, resVal, False)
         return False
 
     # Method to execute return operations
@@ -238,14 +226,15 @@ class VirtualMachine:
 
     # Method to execute Expansion of Activation Record
     def eraOperation(self, quad):
-        self.functionStack.push(quad.getResult())
-        tempEra = ActivationRecord(self.localMem)
-        self.localMemHandler.push(tempEra)
-        newMem = Memory("Temporal", 80000, 85000)
-        newEra = ActivationRecord(newMem)
-        if self.debug >= 4:
-            print("Prev ERA")
-            tempEra.printMemory()
+        1
+        # self.functionStack.push(quad.getResult())
+        # tempEra = ActivationRecord(self.functionDirectory.localMem)
+        # self.localMemHandler.push(tempEra)
+        # newMem = Memory("Temporal", 80000, 85000)
+        # newEra = ActivationRecord(newMem)
+        # if self.debug >= 4:
+        #     print("Prev ERA")
+        #     tempEra.printMemory()
 
     # Method to execute parameter operations
     def paramOperation(self, quad):
@@ -267,15 +256,15 @@ class VirtualMachine:
 
     # Method to print VM info
     def print(self, quad):
-        self.globalMem.print('Global')
-        self.localMem.print('Local')
-        self.constMem.print('Constant')
+        self.functionDirectory.globalMem.print('Global')
+        self.functionDirectory.localMem.print('Local')
+        self.functionDirectory.constMem.print('Constant')
 
     # Method to clean VM
     def clear(self, quad):
-        self.globalMem.clearMemory()
-        self.localMem.clearMemory()
-        self.constMem.clearMemory()
+        self.functionDirectory.globalMem.clearMemory()
+        self.functionDirectory.localMem.clearMemory()
+        self.functionDirectory.constMem.clearMemory()
         self.instructionPointer = 0
         self.quadruples = None
 
