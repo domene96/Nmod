@@ -149,6 +149,15 @@ class NmodListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by NmodParser#special_function.
+    def enterSpecial_function(self, ctx:NmodParser.Special_functionContext):
+        pass
+
+    # Exit a parse tree produced by NmodParser#special_function.
+    def exitSpecial_function(self, ctx:NmodParser.Special_functionContext):
+        pass
+
+
     # Enter a parse tree produced by NmodParser#expression.
     def enterExpression(self, ctx:NmodParser.ExpressionContext):
         pass
@@ -272,6 +281,15 @@ class NmodListener(ParseTreeListener):
 
     # Exit a parse tree produced by NmodParser#barplot.
     def exitBarplot(self, ctx:NmodParser.BarplotContext):
+        pass
+
+
+    # Enter a parse tree produced by NmodParser#dotchart.
+    def enterDotchart(self, ctx:NmodParser.DotchartContext):
+        pass
+
+    # Exit a parse tree produced by NmodParser#dotchart.
+    def exitDotchart(self, ctx:NmodParser.DotchartContext):
         pass
 
 
@@ -482,15 +500,6 @@ class NmodListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by NmodParser#weighedmean.
-    def enterWeighedmean(self, ctx:NmodParser.WeighedmeanContext):
-        pass
-
-    # Exit a parse tree produced by NmodParser#weighedmean.
-    def exitWeighedmean(self, ctx:NmodParser.WeighedmeanContext):
-        pass
-
-
     # Enter a parse tree produced by NmodParser#rank.
     def enterRank(self, ctx:NmodParser.RankContext):
         pass
@@ -659,15 +668,6 @@ class NmodListener(ParseTreeListener):
 
     # Exit a parse tree produced by NmodParser#runif.
     def exitRunif(self, ctx:NmodParser.RunifContext):
-        pass
-
-
-    # Enter a parse tree produced by NmodParser#dotchart.
-    def enterDotchart(self, ctx:NmodParser.DotchartContext):
-        pass
-
-    # Exit a parse tree produced by NmodParser#dotchart.
-    def exitDotchart(self, ctx:NmodParser.DotchartContext):
         pass
 
 

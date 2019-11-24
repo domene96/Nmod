@@ -194,8 +194,8 @@ class ActivationRecord:
         self.eraMem = funcMem
 
     # Print activation record
-    def print(self):
-        1
+    def printMemory(self):
+        self.eraMem.printMemory()
 
     # Destroy activation record
     def destroy(self):

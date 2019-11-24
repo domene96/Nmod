@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import sys
+
 # Memory Structure for Nmod
 class Memory:
     # Initialize memory
@@ -24,63 +26,64 @@ class Memory:
     def nextMemoryDirection(self, type):
         if type == 'int':
             if self.intPointer > self.initAddr - 1 + self.slotsPerType:
-                print("#MemoryManagement Error: int upper out of bounds ", addr, " address")
+                sys.exit("#MemoryManagement Error: int out of bounds " + str(self.intPointer) + " address")
             self.intPointer += 1
             return self.intPointer - 1
         elif type == 'float':
             if self.floatPointer > self.initAddr - 1 + self.slotsPerType * 2:
-                print("#MemoryManagement Error: float upper out of bounds ", addr, " address")
+                sys.exit("#MemoryManagement Error: float out of bounds " + str(self.floatPointer) + " address")
             self.floatPointer += 1
             return self.floatPointer - 1
         elif type == 'char':
             if self.charPointer > self.initAddr - 1 + self.slotsPerType * 3:
-                print("#MemoryManagement Error: char upper out of bounds ", addr, " address")
+                sys.exit("#MemoryManagement Error: char out of bounds " + str(self.charPointer) + " address")
             self.charPointer += 1
             return self.charPointer - 1
 
     # Get value from memory address
     def getValueAtAddress(self, addr):
-        if addr > self.initAddr:
-            if addr < self.initAddr + self.slotsPerType:
+        if addr >= self.initAddr:
+            if addr <= self.initAddr + self.slotsPerType:
                 return self.intMem[addr]
-            elif addr < self.initAddr + self.slotsPerType * 2:
+            elif addr <= self.initAddr + self.slotsPerType * 2:
                 return self.floatMem[addr]
-            elif addr < self.initAddr + self.slotsPerType * 3:
+            elif addr <= self.initAddr + self.slotsPerType * 3:
                 return self.charMem[addr]
             else:
-                print("#MemoryManagement Error: upper out of bounds ", addr, " address")
+                sys.exit("#MemoryManagement Error: upper out of bounds " + str(addr) + " address")
         else:
-            print("#MemoryManagement Error: lower out of bounds ", addr, " address")
+            sys.exit("#MemoryManagement Error: lower out of bounds " + str(addr) + " address")
 
     # Set a value to a memory address
     def setValueAtAddress(self, addr, val):
-        if addr > self.initAddr:
-            if addr < self.initAddr + self.slotsPerType:
+        if addr >= self.initAddr:
+            if addr <= self.initAddr + self.slotsPerType:
                 self.intMem[addr] = val
-            elif addr < self.initAddr + self.slotsPerType * 2:
+            elif addr <= self.initAddr + self.slotsPerType * 2:
                 self.floatMem[addr] = val
-            elif addr < self.initAddr + self.slotsPerType * 3:
+            elif addr <= self.initAddr + self.slotsPerType * 3:
                 self.charMem[addr] = val
             else:
-                print("#MemoryManagement Error: upper out of bounds ", addr, " address")
+                sys.exit("#MemoryManagement Error: upper out of bounds " + str(addr) + " address")
         else:
-            print("#MemoryManagement Error: lower out of bounds ", addr, " address")
+            sys.exit("#MemoryManagement Error: lower out of bounds " + str(addr) + " address")
 
     # Reserve a memory space for dimensional variables
     def reserveMemoryAddresses(self, type, size):
         if type == 'int':
-            if self.intPointer > self.initAddr - 1 + self.slotsPerType:
-                print("#MemoryManagement Error: int upper out of bounds ", addr, " address")
+            if self.intPointer >= self.initAddr - 1 + self.slotsPerType:
+                sys.exit("#MemoryManagement Error: int out of bounds " + str(self.intPointer) + " address")
             self.intPointer += size
             return self.intPointer - size
         elif type == 'float':
-            if self.floatPointer > self.initAddr - 1 + self.slotsPerType * 2:
-                print("#MemoryManagement Error: float upper out of bounds ", addr, " address")
+            if self.floatPointer >= self.initAddr - 1 + self.slotsPerType * 2:
+                print("1#MemoryManagement Error: float out of bounds " + str(self.floatPointer) + " address")
+                # sys.exit("1#MemoryManagement Error: float out of bounds " + str(self.floatPointer) + " address")
             self.floatPointer += size
             return self.floatPointer - size
         elif type == 'char':
-            if self.charPointer > self.initAddr - 1 + self.slotsPerType * 3:
-                print("#MemoryManagement Error: char upper out of bounds ", addr, " address")
+            if self.charPointer >= self.initAddr - 1 + self.slotsPerType * 3:
+                sys.exit("#MemoryManagement Error: char out of bounds " + str(self.charPointer) + " address")
             self.charPointer += size
             return self.charPointer - size
 
@@ -101,15 +104,15 @@ class Memory:
         print("-----------------------------")
         print("Int: ")
         # Print Ints
-        for key, value in self.intMem.iteritems():
+        for key, value in self.intMem.items():
             print(key, value)
         # Print Floats
         print("Float: ")
-        for key, value in self.floatMem.iteritems():
+        for key, value in self.floatMem.items():
             print(key, value)
         # Print Chars
         print("Char: ")
-        for key, value in self.charMem.iteritems():
+        for key, value in self.charMem.items():
             print(key, value)
         print("-----------------------------")
 

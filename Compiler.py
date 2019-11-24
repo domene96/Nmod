@@ -48,6 +48,8 @@ class Compiler:
         self.typeStack = Stack()
         self.jumpStack = Stack()
         self.dimStack = Stack()
+        # Debug flag
+        self.debug = 2 # 0 Mem or FuncDir or Var error, 1 currently working, 2 print funcDir, 3 print quads, 4 resolved issues, 5 print stacks on insertion, 6 other warnings/info
 
     # MEMORY
     # Get memory address of id
@@ -59,7 +61,8 @@ class Compiler:
         elif id in self.constants:
             return self.constants[id][0]
         else:
-            # print("#MemoryManagement Warning: Attempting to find ", id, " was not found")
+            if self.debug >= 6:
+                print("#COMPILATION WARNING MemoryManagement: Attempting to find ", id, " was not found")
             return id
 
     # Temporal address to store quad result
@@ -72,7 +75,7 @@ class Compiler:
         if self.functionDirectory.addFunction(func, type, VariableTable(), [], None, None, None):
             return True
         else:
-            msg = "#FunctionDeclaration Error: The function " + str(func) + " was not declared properly"
+            msg = "#COMPILATION ERROR FunctionDeclaration: The function " + str(func) + " was not declared properly"
             self.error = Error(msg, True, True)
             self.error.revise()
 
@@ -83,7 +86,7 @@ class Compiler:
             self.constants[val] = [self.constMem.nextMemoryDirection(type), val]
             return self.constants[val][0]
         else:
-            msg = "#ConstantDeclaration Info: The constant " + str(val) + " exist"
+            msg = "#COMPILATION INFO ConstantDeclaration: The constant " + str(val) + " exist"
             self.error = Error(msg, False, False)
             self.error.revise()
 
@@ -108,7 +111,7 @@ class Compiler:
                 memDir = self.localMem.reserveMemoryAddresses(self.localType, size)
             self.functionDirectory.getVarTable(func).addVariable(id, type, memDir, None, size, None)
         else:
-            msg = "#FunctionDeclaration Error: The function " + str(func) + " is not defined"
+            msg = "#COMPILATION ERROR FunctionDeclaration: The function " + str(func) + " is not defined"
             self.error = Error(msg, True, True)
             self.error.revise()
         # If dimensioned variable associate dimension pointer to variable
@@ -124,11 +127,11 @@ class Compiler:
             elif self.functionDirectory.getVarTable('global').varExists(id):
                 return self.functionDirectory.getVarTable('global').getValue(id)
             else:
-                msg = "#VariableDeclaration Error: The variable " + str(id) + " is not defined"
+                msg = "#COMPILATION ERROR VariableDeclaration: The variable " + str(id) + " is not defined"
                 self.error = Error(msg, True, True)
                 self.error.revise()
         else:
-            msg = "#FunctionDeclaration Error: The function " + str(func) + " is not defined"
+            msg = "#COMPILATION ERROR FunctionDeclaration: The function " + str(func) + " is not defined"
             self.error = Error(msg, True, True)
             self.error.revise()
 
@@ -143,11 +146,11 @@ class Compiler:
                 self.localType = self.functionDirectory.getVarTable('global').getType(id)
                 return self.localType
             else:
-                msg = "#VariableDeclaration Error: The variable " + str(id) + " is not defined"
+                msg = "#COMPILATION ERROR VariableDeclaration: The variable " + str(id) + " is not defined"
                 self.error = Error(msg, True, True)
                 self.error.revise()
         else:
-            print("#FunctionDeclaration Error: The function ", func, " is not defined")
+            sys.exit("#COMPILATION ERROR FunctionDeclaration: The function " + str(func) + " is not defined")
 
     # Get memory address of variable
     def getVarAddr(self, func, id):
@@ -158,9 +161,9 @@ class Compiler:
             elif self.functionDirectory.getVarTable('global').varExists(id):
                 return self.functionDirectory.getVarTable('global').getAddress(id)
             else:
-                print("#VariableDeclaration Error: The variable ", id, " is not defined")
+                sys.exit("#COMPILATION ERROR VariableDeclaration: The variable " + str(id) + " is not defined")
         else:
-            print("#FunctionDeclaration Error: The function ", func, " is not defined")
+            sys.exit("#COMPILATION ERROR FunctionDeclaration: The function " + str(func) + " is not defined")
 
     # Get total variable size of variable
     def getVarSize(self, func, id):
@@ -171,9 +174,9 @@ class Compiler:
             elif self.functionDirectory.getVarTable('global').varExists(id):
                 return self.functionDirectory.getVarTable('global').getTotalSize(id)
             else:
-                print("#VariableDeclaration Error: The variable ", id, " is not defined")
+                sys.exit("#COMPILATION ERROR VariableDeclaration: The variable " + str(id) + " is not defined")
         else:
-            print("#FunctionDeclaration Error: The function ", func, " is not defined")
+            sys.exit("#COMPILATION ERROR FunctionDeclaration: The function " + str(func) + " is not defined")
 
     # Get dimension pointer of variable
     def getVarDim(self, func, id):
@@ -184,9 +187,9 @@ class Compiler:
             elif self.functionDirectory.getVarTable('global').varExists(id):
                 return self.functionDirectory.getVarTable('global').getVDimPointer(id)
             else:
-                print("#VariableDeclaration Error: The variable ", id, " is not defined")
+                sys.exit("#COMPILATION ERROR VariableDeclaration: The variable " + str(id) + " is not defined")
         else:
-            print("#FunctionDeclaration Error: The function ", func, " is not defined")
+            sys.exit("#COMPILATION ERROR FunctionDeclaration: The function " + str(func) + " is not defined")
 
     # DECLARING DIMENSIONAL VARIABLES
     # Method to initialize dimensioned variable
@@ -206,8 +209,7 @@ class Compiler:
     # Method to set upper bound of a dimension
     def setDimHighBound(self, val):
         if val < self.currentDimNode.low:
-            print("#VariableDeclaration Error: The upper bound ", val, " must be bigger than the lower bound ", self.currentDimNode.low)
-            sys.exit()
+            sys.exit("#COMPILATION ERROR VariableDeclaration: The upper bound ", val, " must be bigger than the lower bound ", self.currentDimNode.low)
         self.currentDimNode.high = val
         self.r = self.r * (int(self.currentDimNode.high) - int(self.currentDimNode.low) + 1)
 
@@ -226,7 +228,8 @@ class Compiler:
         self.dim = 1
         self.sum = 0
         while self.dim <= dimCant:
-            # print("while k ", self.dim, dimCant)
+            if self.debug >= 4:
+                print("while k ", self.dim, dimCant)
             low = int(self.currentDimNode.getDimLow())
             high = int(self.currentDimNode.getDimHigh())
             m = self.r / (high - low + 1)
@@ -235,14 +238,16 @@ class Compiler:
                 self.currentDimNode.setDimK(m)
             self.sum = self.sum + low * m
             self.dim += 1
-            # print("m")
-            # self.currentDimNode.print()
+            if self.debug >= 4:
+                print("m")
+                self.currentDimNode.print()
             if self.currentDimNode.getDimPointer() != None:
                 self.currentDimNode = self.currentDimNode.getDimPointer()
         self.k = self.sum
         self.currentDimNode.setDimK(0 - self.k)
-        # print("k")
-        # self.currentDimNode.print()
+        if self.debug >= 4:
+            print("k")
+            self.currentDimNode.print()
 
     # Method to set the base address to the variable in var table
     def associateBaseAddr(self, id):
@@ -257,8 +262,7 @@ class Compiler:
         elif self.functionDirectory.getVarTable('global').varExists(id):
             return self.functionDirectory.getVarTable('global').getAddress(id)
         else:
-            print("#VariableDeclaration Error: The variable ", id, " is not defined")
-            sys.exit()
+            sys.exit("#COMPILATION ERROR VariableDeclaration: The variable " + str(id) + " is not defined")
 
     # Method to verify the expression is between dimension bounds and generate quadruples
     def reviseInRange(self, top):
@@ -294,8 +298,7 @@ class Compiler:
             self.insertStackDim({id, self.dim})
             self.insertFalseBottom()
         else:
-            print("#VariableAccess Error: The variable ", id, " is not dimensioned")
-            sys.exit()
+            sys.exit("#COMPILATION ERROR VariableAccess: The variable ", id, " is not dimensioned")
 
     # Method to generate dimensioned variable quadruples and verify var is dimensioned variable
     def generateDimVarQuad(self):
@@ -380,12 +383,16 @@ class Compiler:
 
     # Debugging prints and VM instantiation
     def mainEnd(self):
-        # self.functionDirectory.print()
-        print("QUADRUPLES")
-        self.printQuadruples();
-        print("-------------")
+        if self.debug >= 2:
+            self.functionDirectory.print()
+            if self.debug >= 3:
+                print("QUADRUPLES")
+                self.printQuadruples();
+                print("-------------")
         # Execute virtual machine
         vm = VirtualMachine()
+        vm.debug = self.debug
+        vm.functionDirectory = self.functionDirectory
         vm.fillMem()
         vm.run(self.quadList)
 
@@ -407,18 +414,20 @@ class Compiler:
     # Method to get the memory address of the expected return in a given function
     def getModuleReturnAddr(self, func):
         if self.functionDirectory.functionExists(func):
+            if self.debug >= 1:
+                print(func, self.functionDirectory.getAddress(func))
             return self.functionDirectory.getAddress(func)
         else:
-            print("#FunctionDeclaration Error: The function ", func," is not defined")
-            sys.exit()
+            sys.exit("#COMPILATION ERROR FunctionDeclaration: The function " + str(func) + " is not defined")
 
     # Method to get the type of the expected return in a given function
     def getModuleReturnType(self, func):
         if self.functionDirectory.functionExists(func):
+            if self.debug >= 1:
+                print(func, self.functionDirectory.getType(func))
             return self.functionDirectory.getType(func)
         else:
-            print("#FunctionDeclaration Error: The function ", func," is not defined")
-            sys.exit()
+            sys.exit("#COMPILATION ERROR FunctionDeclaration: The function " + str(func) + " is not defined")
 
     # PARAMETERS
     # Insert parameter type to expected params
@@ -427,11 +436,9 @@ class Compiler:
             if id not in self.functionDirectory.getParams(func):
                 self.functionDirectory.getParams(func).append(type)
             else:
-                print("#ParameterDeclaration Error: The parameter ", id, " exists")
-                sys.exit()
+                sys.exit("#COMPILATION ERROR ParameterDeclaration: The parameter ", id, " exists")
         else:
-            print("#FunctionDeclaration Error: The function ", func, " is not defined")
-            sys.exit()
+            sys.exit("#COMPILATION ERROR FunctionDeclaration: The function " + str(func) + " is not defined")
 
     # Incremente parameter count
     def moveParameterPointer(self):
@@ -443,8 +450,7 @@ class Compiler:
             self.paramCount = 0
             self.generateGoSub()
         else:
-            print("#Parameter Error: missing parameters in function call ", self.localFunc)
-            sys.exit()
+            sys.exit("#COMPILATION ERROR ParameterCount: missing parameters in function call ", self.localFunc)
 
     # Validate parameter count and reset count to zero
     def resetParameterPointerSpecialFunction(self, type):
@@ -452,8 +458,7 @@ class Compiler:
             self.paramCount = 0
             self.generateSpecialGoSub(type)
         else:
-            print("#Parameter Error: missing parameters in special function call ", type)
-            sys.exit()
+            sys.exit("#COMPILATION ERROR ParameterCount: missing parameters in special function call ", type)
 
     # QUADRUPLES
     # Print quadList
@@ -484,8 +489,7 @@ class Compiler:
                 operator = self.popStackOperator()
                 if leftType == None or rightType == None:
                     resType = None
-                    print("#GenerateQuadruple Error: processing variable types: ", leftType, rightType)
-                    sys.exit()
+                    sys.exit("#COMPILATION ERROR GenerateQuadruple: processing variable types: ", leftType, rightType)
                 else:
                     resType = self.semantic.semanticCube[operator][leftType][rightType]
                 if resType != 'error' and resType != None:
@@ -501,8 +505,7 @@ class Compiler:
                     self.insertStackOperand(resAddr)
                     self.insertStackType(resType)
                 else:
-                    print("#GenerateQuadruple Error: ", leftType, operator, rightType, " generates ", resType)
-                    sys.exit()
+                    sys.exit("#COMPILATION ERROR GenerateQuadruple: ", leftType, operator, rightType, " generates ", resType)
 
     # Method to generate quadruples of an assignment
     def generateAssignmentQuad(self):
@@ -521,14 +524,12 @@ class Compiler:
             self.quadCount += 1
             self.insertStackOperand(resAddr)
         else:
-            print("#GenerateQuadruple Error: assignment quadruples")
-            sys.exit()
+            sys.exit("#COMPILATION ERROR GenerateQuadruple: assignment quadruples")
 
     # Method to generate quadruples for print / read / return
     def generateCommonQuad(self, type):
         if self.operandStack.empty() and self.typeStack.empty():
-            print("#GenerateQuadruple Error: ", type, " quadruples")
-            sys.exit()
+            sys.exit("#COMPILATION ERROR GenerateQuadruple: ", type, " quadruples")
         else:
             self.popStackType()
             opAddr = self.semantic.operatorToKey[type]
@@ -544,8 +545,7 @@ class Compiler:
     def conditionStart(self, type):
         expType = self.popStackType()
         if expType != self._INT:
-            print("#GenerateQuadruple Error: ", type, " expression quadruples")
-            sys.exit()
+            sys.exit("#COMPILATION ERROR GenerateQuadruple: ", type, " expression quadruples")
         else:
             opAddr = self.semantic.operatorToKey['gotoF']
             condition = self.getMemAddr(self.popStackOperand())
@@ -591,14 +591,14 @@ class Compiler:
 
     # Method to fill goto position with current quadruples count
     def fillGoto(self, pos):
-        #print("Fill ", pos, " quad count ", self.quadCount)
+        if self.debug >= 4:
+            print("Fill ", pos, " quad count ", self.quadCount)
         op = str(self.quadList[pos].getOperator())
         if op == '17' or op == '18' or op == '19':
             self.quadList[pos].setResult(self.quadCount)
             self.quadList2[pos].setResult(self.quadCount)
         else:
-            print("#GenerateQuadruple Error: While FILL goto quadruples for pos ", pos)
-            sys.exit()
+            sys.exit("#COMPILATION ERROR GenerateQuadruple: While FILL goto quadruples for pos ", pos)
 
     # Method to generate era quadruple
     def generateERA(self, func):
@@ -614,24 +614,24 @@ class Compiler:
         self.generateQuad(self.localFunc, 'exp')
         opAddr = self.semantic.operatorToKey['param']
         resType = self.popStackType()
-        #print(opAddr,resType,self.paramCount,self.localFunc,len(self.functionDirectory.getParams(self.localFunc)))
+        if self.debug >= 4:
+            print(opAddr,resType,self.paramCount,self.localFunc,len(self.functionDirectory.getParams(self.localFunc)))
         if self.paramCount >= len(self.functionDirectory.getParams(self.localFunc)):
-            print("#Parameter Error: Parameter count out of bounds ", self.paramCount, " for call ", self.localFunc)
-            sys.exit()
+            sys.exit("#COMPILATION ERROR Parameter: Parameter count out of bounds ", self.paramCount, " for call ", self.localFunc)
         else:
             paramType = self.functionDirectory.getParams(self.localFunc)[self.paramCount]
         if resType == paramType:
             parameter = "par" + str(self.paramCount)
             tempAddr = self.getMemAddr(self.popStackOperand())
-            #print(parameter, tempAddr)
+            if self.debug >= 4:
+                print(parameter, tempAddr)
             quad = Quadruple(opAddr, tempAddr, None, parameter)
             self.quadList.append(quad)
             quad = Quadruple('param', tempAddr, None, parameter)
             self.quadList2.append(quad)
             self.quadCount += 1
         else:
-            print("#GenerateQuadruple Error: Type mismatch in action parameter quadruples, expected: ", paramType, " , received: ", resType)
-            sys.exit()
+            sys.exit("#COMPILATION ERROR GenerateQuadruple: Type mismatch in action parameter quadruples, expected: ", paramType, " , received: ", resType)
 
     # Method to generate gosub quadruple
     def generateGoSub(self):
@@ -650,8 +650,7 @@ class Compiler:
     # Method to generate era quadruple for special functions
     def generateSpecialERA(self, type):
         if type not in self.semantic.specialFunc:
-            print("#GenerateQuadruple Error: special function ", type, " quadruples")
-            sys.exit()
+            sys.exit("#COMPILATION ERROR GenerateQuadruple Error: special function ", type, " quadruples")
         else:
             # Special function ERA quadruple
             opAddr = self.semantic.operatorToKey[type]
@@ -664,50 +663,49 @@ class Compiler:
     # Method to generate paramater quadruples for special functions
     def generateSpecialActionParam(self, type):
         if type not in self.semantic.specialFunc:
-            print("#GenerateQuadruple Error: special function ", type, " quadruples")
-            sys.exit()
+            sys.exit("#COMPILATION ERROR GenerateQuadruple Error: special function ", type, " quadruples")
         else:
             # Special function parameter quadruples
             self.generateQuad('global', 'exp')
             opAddr = self.semantic.operatorToKey['param']
             resType = self.semantic.specialFunc[type][0]
-            # print(self.paramCount, len(self.semantic.specialFunc[type][1]))
+            if self.debug >= 4:
+                print(self.paramCount, len(self.semantic.specialFunc[type][1]))
             if self.paramCount >= len(self.semantic.specialFunc[type][1]):
-                print("#Parameter Error: Parameter count out of bounds ", self.paramCount, " for call ", type)
-                sys.exit()
+                sys.exit("#COMPILATION ERROR ParameterDeclaration: Parameter count out of bounds ", self.paramCount, " for call ", type)
             else:
                 paramType = self.semantic.specialFunc[type][1][self.paramCount]
-            print(type, self.paramCount, resType, paramType)
+            if self.debug >= 4:
+                print(type, self.paramCount, resType, paramType)
             if resType == paramType:
                 parameter = "par" + str(self.paramCount)
                 tempAddr = self.getMemAddr(self.popStackOperand())
-                # print(parameter, tempAddr)
+                if self.debug >= 4:
+                    print(parameter, tempAddr)
                 quad = Quadruple(opAddr, tempAddr, None, parameter)
                 self.quadList.append(quad)
                 quad = Quadruple('param', tempAddr, None, parameter)
                 self.quadList2.append(quad)
                 self.quadCount += 1
             else:
-                print("#GenerateQuadruple Error: Type mismatch in action parameter quadruples, expected: ", paramType, " , received: ", resType, " for special function ", type)
-                sys.exit()
+                sys.exit("#COMPILATION ERROR GenerateQuadruple: Type mismatch in action parameter quadruples, expected: ", paramType, " , received: ", resType, " for special function ", type)
 
     # Method to generate gosub quadruple for special functions
     def generateSpecialGoSub(self, type):
         if type not in self.semantic.specialFunc:
-            print("#GenerateQuadruple Error: special function ", type, " quadruples")
-            sys.exit()
+            sys.exit("#COMPILATION ERROR GenerateQuadruple: special function ", type, " quadruples")
         else:
             # Special function GOSUB quadruple
             resType = self.semantic.specialFunc[type][0]
             resAddr = self.getTempAddr(resType)
             opAddr = self.semantic.operatorToKey['gosub']
-            # print(opAddr, type, None, resAddr)
+            if self.debug >= 4:
+                print(opAddr, type, None, resAddr)
             quad = Quadruple(opAddr, type, None, resAddr)
             self.quadList.append(quad)
             quad = Quadruple('gosub', type, None, resAddr)
             self.quadList2.append(quad)
             self.quadCount += 1
-            # self.generateFunctionGoto()
             self.insertStackOperand(resAddr)
             self.insertStackType(resType)
 
@@ -720,8 +718,7 @@ class Compiler:
         if self.topStackOperator() == '(':
             self.popStackOperator()
         else:
-            print("#RemoveFalseBottom Error")
-            sys.exit()
+            sys.exit("#COMPILATION ERROR RemoveFalseBottom: no false bottom to remove")
 
     # inserts
     def insertStackOperator(self, operator):
@@ -731,18 +728,24 @@ class Compiler:
         if isinstance(operand, str):
             operand = self.cutID(operand)
         self.operandStack.push(operand)
-        # print(self.quadCount)
-        # self.operandStack.print()
+        if self.debug >= 5:
+            print(self.quadCount)
+            self.operandStack.print()
 
     def insertStackType(self, type):
         self.typeStack.push(type)
-        # self.typeStack.print()
+        if self.debug >= 5:
+            self.typeStack.print()
 
     def insertStackJump(self, jump):
         self.jumpStack.push(jump)
+        if self.debug >= 5:
+            self.jumpStack.print()
 
     def insertStackDim(self, dim):
         self.dimStack.push(dim)
+        if self.debug >= 5:
+            self.dimStack.print()
 
     # tops
     def topStackOperator(self):

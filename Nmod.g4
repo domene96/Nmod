@@ -49,7 +49,9 @@ writing
   ( PRINT LPRACKET ( STRING {$val = c.insertConstant('char', $STRING.text)} {c.insertStackOperand($val)} {c.insertStackType('char')} | expression ( COMMA expression )* )? RPRACKET {c.generateCommonQuad('print')} );
 call_module
   returns[Object type, val]:
-  ( r_return | rnom | rexp | rgamma | points | lines | text | barplot | piechart | xyplot | densityplot | histogram | sin | cos | tan | asin | acos | atan | atan2 | log | log10 | exponent | f_max | f_min | f_range | f_sum | diff | prod | mean | median | quantile | weighedmean | rank | var | sd | cor | cov | f_round | transpose | diagonal | ginv | rowsum | colsum | load | data | library | rpois | rweibull | rbinom | rgeom | runif | ID {c.generateERA($ID.text)} {c.functionDirectory.functionExists($ID.text)} {c.localFunc = $ID.text} {$val = c.getModuleReturnAddr($ID.text)} {$type = c.getModuleReturnType($ID.text)} LPRACKET {c.insertFalseBottom()} ( exp {c.generateActionParameter()} ( COMMA {c.moveParameterPointer()} exp {c.generateActionParameter()} )* )? RPRACKET {c.removeFalseBottom()} {c.resetParameterPointer()} );
+  ( ID {c.generateERA($ID.text)} {c.functionDirectory.functionExists($ID.text)} {c.localFunc = $ID.text} {$val = c.getModuleReturnAddr($ID.text)} {$type = c.getModuleReturnType($ID.text)} LPRACKET {c.insertFalseBottom()} ( exp {c.generateActionParameter()} ( COMMA {c.moveParameterPointer()} exp {c.generateActionParameter()} )* )? RPRACKET {c.removeFalseBottom()} {c.resetParameterPointer()} | special_function );
+special_function:
+  ( r_return | rnom | rexp | rgamma | points | lines | text | barplot | piechart | xyplot | densityplot | histogram | sin | cos | tan | asin | acos | atan | atan2 | log | log10 | exponent | f_max | f_min | f_range | f_sum | diff | prod | mean | median | quantile | rank | var | sd | cor | cov | f_round | transpose | diagonal | ginv | rowsum | colsum | load | data | library | rpois | rweibull | rbinom | rgeom | runif );
 expression:
   ( sub_exp {c.generateQuad(c.localFunc, 'sub_exp')} ( ( AND {c.insertStackOperator($AND.text)} | OR {c.insertStackOperator($OR.text)} )+ sub_exp+ {c.generateQuad(c.localFunc, 'sub_exp')} )* );
 sub_exp:
@@ -82,9 +84,11 @@ points:
 lines:
   ( LINES {c.generateSpecialERA($LINES.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($LINES.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($LINES.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($LINES.text)} );
 text:
-  ( TEXT LPRACKET CTEI COMMA CTEI COMMA id_access RPRACKET );
+  ( TEXT {c.generateSpecialERA($TEXT.text)} LPRACKET {c.insertFalseBottom()} CTEI {c.insertConstant('int', $CTEI.text)} {c.generateSpecialActionParam($TEXT.text)} COMMA {c.moveParameterPointer()} CTEI {c.insertConstant('int', $CTEI.text)} {c.generateSpecialActionParam($TEXT.text)} COMMA {c.moveParameterPointer()} id_access RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($TEXT.text)} );
 barplot:
   ( BARPLOT {c.generateSpecialERA($BARPLOT.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($BARPLOT.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($BARPLOT.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($BARPLOT.text)} );
+dotchart:
+  ( DOTCHART {c.generateSpecialERA($DOTCHART.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($DOTCHART.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($DOTCHART.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($DOTCHART.text)} );
 piechart:
   ( PIECHART {c.generateSpecialERA($PIECHART.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($PIECHART.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($PIECHART.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($PIECHART.text)} );
 xyplot:
@@ -131,8 +135,6 @@ median:
   ( MEDIAN LPRACKET exp RPRACKET );
 quantile:
   ( QUANTILE {c.generateSpecialERA($QUANTILE.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($QUANTILE.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($QUANTILE.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($QUANTILE.text)} );
-weighedmean:
-  ( WEIGHEDMEAN {c.generateSpecialERA($WEIGHEDMEAN.text)} LPRACKET {c.insertFalseBottom()} exp {c.generateSpecialActionParam($WEIGHEDMEAN.text)} ( COMMA {c.moveParameterPointer()} exp {c.generateSpecialActionParam($WEIGHEDMEAN.text)} )* RPRACKET {c.removeFalseBottom()} {c.resetParameterPointerSpecialFunction($WEIGHEDMEAN.text)} );
 rank:
   ( RANK LPRACKET exp COMMA ZERO RPRACKET
   | RANK LPRACKET exp COMMA ONE RPRACKET );
@@ -178,7 +180,7 @@ runif:
 fragment LOWERCASE: [a-z];
 fragment UPPERCASE: [A-Z];
 fragment DIGIT: [0-9];
-PROGRAM       : 'program';
+PROGRAM       : 'nmod';
 MAIN          : 'main';
 VARIABLES     : 'var';
 PERIOD        : '.';
@@ -226,7 +228,7 @@ POINTS        : 'points';
 LINES         : 'lines';
 TEXT          : 'text';
 BARPLOT       : 'barplot';
-dotchart      : 'dotchart';
+DOTCHART      : 'dotchart';
 PIECHART      : 'piechart';
 XYPLOT        : 'xyplot';
 DENSITYPLOT   : 'densityplot';
@@ -250,7 +252,6 @@ PROD          : 'prod';
 MEAN          : 'mean';
 MEDIAN        : 'median';
 QUANTILE      : 'quantile';
-WEIGHEDMEAN   : 'weighedmean';
 RANK          : 'rank';
 VARIANCE      : 'variance';
 SD            : 'sd';

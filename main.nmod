@@ -1,7 +1,7 @@
 /# Example program for compiler Nmod
   Compiler developed by: domene96 aka A01192913 #/
 
-program NmodExample:
+nmod NmodExample:
 
 # VARIABLES
 var int : example1, Example2, _example3, example4[-3:8]
@@ -9,6 +9,7 @@ var int : 123abcValid
 var char : example5, example6[0:99], ghi[8:80]
 var float : example7, mat[1:4,-2:5]
 var float : cube[0:2,-3:8,1:4]
+var float : arrX[0:1000], arrY[0:1000], arrTexts[-10:-5], arrProbs[0:1000], arrQuantiles[0:3]
 
 # MODULES
 testFunction <- char func(int example5) {
@@ -112,10 +113,7 @@ main() {
   nothing(1 + 0.5, 'a', 5.6, 9.9)
   print(example6[example1])
   print(example6[5+3])
-  print(cube[2, 2/0, 3])
-
-  rnom(example6[5], 77*2, _example3)
-  histogram(example1)
+  print(cube[2, 2*0, 3])
 
   example6[0] = 0
   example6[1] = 1
@@ -124,20 +122,83 @@ main() {
   example6[4] = 4
   print(example6[3])
 
-  while (1) {
+  /#
+  while (0) {
     print("Tell me something: ")
     print(_example3)
     read("string")
     read(10)
     # read(string)
 
+    # Special Functions
+    rnom(example6[5], 77*2, _example3)
+    rexp(example7, example7)
+    rgamma(example7, example7, example7, example7, example7, example7)
+    /#
+    points(arrX, arrY)
+    lines(example7, example7)
+    text(1, 2, 9.0)
+    /#
+    barplot()
+    piechart()
+    xyplot()
+    densityplot()
+    histogram()
+    /#
+    sin()
+    cos()
+    tan()
+    asin()
+    acos()
+    atan()
+    atan2()
+    /#
+    log()
+    log10()
+    exponent()
+    f_max()
+    f_min()
+    f_range()
+    f_sum()
+    diff()
+    prod()
+    /#
+    mean()
+    median()
+    quantile()
+    rank()
+    var()
+    sd()
+    cor()
+    cov()
+    f_round()
+    /#
+    transpose()
+    diagonal()
+    ginv()
+    rowsum()
+    colsum()
+    /#
+    load()
+    data()
+    library()
+    /#
+    rpois()
+    rweibull()
+    rbinom()
+    rgeom()
+    runif
+    #/
+
+    print(fibonacci(18))
+    print(cyclicFib(18))
     /#
     print(pow(2,18))
     print(sum(2,18))
     print(sqrt(2,18))
+    print(factorial(18))
+    print(cyclicFactorial(18))
     #/
-    print(fibonacci(18))
-    print(cyclicFib(18))
 
     if (example1 > 1000) {
       _example3 = 5
@@ -165,59 +226,6 @@ main() {
       return _example3
     }
   }
-
-  # Special Functions
-  /#
-  rnom()
-  rexp()
-  rgamma()
-  points()
-  lines()
-  text()
-  barplot()
-  piechart()
-  xyplot()
-  densityplot()
-  histogram()
-  sin()
-  cos()
-  tan()
-  asin()
-  acos()
-  atan()
-  atan2()
-  log()
-  log10()
-  exponent()
-  f_max()
-  f_min()
-  f_range()
-  f_sum()
-  diff()
-  prod()
-  mean()
-  median()
-  quantile()
-  weighedmean()
-  rank()
-  var()
-  sd()
-  cor()
-  cov()
-  f_round()
-  transpose()
-  diagonal()
-  ginv()
-  rowsum()
-  colsum()
-  load()
-  data()
-  library()
-  rpois()
-  rweibull()
-  rbinom()
-  rgeom()
-  runif
   #/
 
   return example1
