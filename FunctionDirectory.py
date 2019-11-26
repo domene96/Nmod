@@ -15,6 +15,11 @@ class VariableTable:
             # [3] = total size
             # [4] = dimension pointer
 
+    # Method to return a parameter memory address
+    def paramMemAddr(self, param):
+        var = list(self.varTable.keys())[param]
+        return self.getAddress(var)
+
     # Method to check if variable is atomic (int, float, char)
     def isAtomic(self, var):
         if isinstance(var, int):
@@ -127,8 +132,8 @@ class VariableTable:
         print("-----------------------------")
         for key, value in self.varTable.items():
             print(key, "=>", value)
-            # if value[4] != None:
-            #     value[4].print()
+            if value[4] != None:
+                value[4].print()
         print("-----------------------------")
 
     # Method to destroy the variable table

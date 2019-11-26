@@ -30,16 +30,19 @@ class Memory:
         if type == 'int':
             if self.intPointer > self.intUpperLimit:
                 sys.exit("#MemoryManagement Error: int out of bounds " + str(self.intPointer) + " address")
+            self.setValueAtAddress(self.intPointer, None)
             self.intPointer += 1
             return self.intPointer - 1
         elif type == 'float':
             if self.floatPointer > self.floatUpperLimit:
                 sys.exit("#MemoryManagement Error: float out of bounds " + str(self.floatPointer) + " address")
+            self.setValueAtAddress(self.floatPointer, None)
             self.floatPointer += 1
             return self.floatPointer - 1
         elif type == 'char':
             if self.charPointer > self.charUpperLimit:
                 sys.exit("#MemoryManagement Error: char out of bounds " + str(self.charPointer) + " address")
+            self.setValueAtAddress(self.charPointer, None)
             self.charPointer += 1
             return self.charPointer - 1
 
@@ -104,7 +107,7 @@ class Memory:
             low = self.initAddr
             high = self.intPointer
             while low < high:
-                if val == self.getValueAtAddress(low):
+                if str(val) == str(self.getValueAtAddress(low)):
                     return low
                 low += 1
             return False
@@ -112,7 +115,7 @@ class Memory:
             low = self.intUpperLimit + 1
             high = self.floatPointer
             while low < high:
-                if val == self.getValueAtAddress(low):
+                if str(val) == str(self.getValueAtAddress(low)):
                     return low
                 low += 1
             return False
@@ -120,7 +123,7 @@ class Memory:
             low = self.floatUpperLimit + 1
             high = self.charPointer
             while low < high:
-                if val == self.getValueAtAddress(low):
+                if str(val) == str(self.getValueAtAddress(low)):
                     return low
                 low += 1
             return False

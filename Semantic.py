@@ -237,7 +237,7 @@ class Semantic:
         'goto' : 19,
         'print' : 20,
         'read' : 21,
-        'return' : 22,
+        'end' : 22,
         'revise' : 23,
         'era' : 24,
         'param' : 25,

@@ -16,18 +16,68 @@ class VirtualMachine:
         self.instructionPointer = 0
         self.quadruples = None
         # Structures for processing
-        self.functionDirectory = FunctionDirectory() # Function Directory plus Global and Constant Memory
-        self.localMemHandler = {} # Local memory
+        self.functionDirectory = FunctionDirectory() # Function Directory including Global and Constant Memory
+        self.localMemHandler = {} # Local memories
+        self.functionStack = Stack() # Local function stack
+        self.memStack = Stack() # ERA stack
+        self.jumpStack = Stack() # Jump stack
+        # self.ipStack = Stack() # Instruction Pointer stack
+        # self.returnStack = Stack() # Return values stack
+        self.paramCount = 0
         # Debug flag
-        self.debug = 3 # Not passed by compiler: 0 nothing, 1 print quad count, 2 print results, 3 print quad
+        self.debug = 0 # Not passed by compiler: 0 running VM, 1 current issues, 2 quad count, 3 current quad, 4 resolved issues
+
+    # Methods to handle memory directions which store memory directions
+    def checkVariables(self, leftAddr, rightAddr, resAddr):
+        if isinstance(leftAddr, str):
+            if leftAddr[0] == '(':
+                leftAddr = leftAddr[1:-1]
+                leftVal = int(leftAddr) # Set memory direction as value
+            if leftAddr[0] == '¿':
+                leftAddr = int(leftAddr[1:])
+                leftAddr = int(self.getValAtMem(leftAddr)) # Get memory direction at memory direction
+                leftVal = self.getValAtMem(leftAddr) # Set memory direction as value
+        if isinstance(rightAddr, str):
+            if rightAddr[0] == '(':
+                rightAddr = rightAddr[1:-1]
+                rightVal = int(rightAddr) # Set memory direction as value
+            if rightAddr[0] == '¿':
+                rightAddr = int(rightAddr[1:])
+                rightAddr = int(self.getValAtMem(rightAddr)) # Get memory direction at memory direction
+                rightVal = self.getValAtMem(rightAddr) # Set memory direction as value
+        if isinstance(resAddr, str):
+            if resAddr[0] == '(':
+                resAddr = int(resAddr[1:-1]) # Set memory direction as value
+            if resAddr[0] == '¿':
+                resAddr = int(resAddr[1:])
+        if not isinstance(leftAddr, str):
+            leftVal = self.getValAtMem(leftAddr)
+        if not isinstance(rightAddr, str):
+            rightVal = self.getValAtMem(rightAddr)
+        return leftVal, rightVal, resAddr
+
+    # Methods to handle memory directions which store memory directions
+    def checkVariable(self, resAddr):
+        if isinstance(resAddr, str):
+            if resAddr[0] == '(':
+                resAddr = resAddr[1:-1]
+                res = int(resAddr) # Set memory direction as value
+            if resAddr[0] == '¿':
+                resAddr = int(resAddr[1:])
+                resAddr = int(self.getValAtMem(resAddr)) # Get memory direction at memory direction
+                res = self.getValAtMem(resAddr) # Set memory direction as value
+            return res
+        res = str(self.getValAtMem(resAddr))
+        return res
 
     # Run virtual machine
     def run(self, quads):
         self.quadruples = quads
+        self.functionStack.push('global')
         while self.instructionPointer < len(self.quadruples):
             quad = self.quadruples[self.instructionPointer]
             op = quad.getOperator()
-            if self.debug >= 1:
+            if self.debug >= 2:
                 print(self.instructionPointer)
                 if self.debug >= 3:
                     quad.print()
@@ -48,7 +98,7 @@ class VirtualMachine:
             elif op == 21:
                 self.readOperation(quad)
             elif op == 22:
-                self.returnOperation(quad)
+                self.endOperation(quad)
             elif op == 23:
                 self.reviseOperation(quad)
             elif op == 24:
@@ -59,10 +109,12 @@ class VirtualMachine:
                 self.gosubOperation(quad)
             elif op == 27:
                 self.endprocOperation(quad)
+            elif op == 28:
+                self.returnOperation(quad)
             elif op > 28:
                 self.specialOperation(quad)
             else:
-                sys.exit('#RUNTIME ERROR VirtualMachineExecution: invalid quadruple: ', quad.print())
+                sys.exit('#RUNTIME ERROR VirtualMachineExecution: invalid quadruple: ' + str(quad.print()))
             self.instructionPointer += 1
 
     # Method to get value from memory address
@@ -76,7 +128,7 @@ class VirtualMachine:
         elif addr == -1:
             return self.returnMem.pop()
         else:
-            sys.exit("#RUNTIME ERROR MemoryManagement: out of bounds ", addr, " address")
+            sys.exit("#RUNTIME ERROR MemoryManagement: out of bounds " + str(addr) + " address")
 
     # Method to set value at memory address
     def setValAtMem(self, addr, val):
@@ -89,33 +141,41 @@ class VirtualMachine:
         elif addr == -1:
             self.returnMem.push(val)
         else:
-            sys.exit("#RUNTIME ERROR MemoryManagement: out of bounds ", addr, " address")
+            sys.exit("#RUNTIME ERROR MemoryManagement: out of bounds " + str(addr) + " address")
 
     # Method to execute write operations
     def writeOperation(self, quad):
-        valAddr = quad.getResult()
-        res = str(self.getValAtMem(valAddr))
-        if self.debug >= 2:
-            print("print ", res)
+        resAddr = quad.getResult()
+        res = self.checkVariable(resAddr)
+        if self.debug >= 0:
+            print("printing ", res)
 
     # Method to execute read operations
     def readOperation(self, quad):
-        1
-        # resAddr = quad.getResult()
-        # input = input()
-        # res = str(input)
-        # self.setValAtMem(resAddr, res)
+        resAddr = quad.getResult()
+        res = self.getValAtMem(resAddr)
+        try:
+            file = open(res, 'r')
+            if file.mode == 'r':
+                content = file.read()
+                if self.debug >= 0:
+                    print("reading ", content)
+        except:
+            print("#RUNTIME ERROR FileManipulation: file " + str(res) + " does not exist")
+            # sys.exit("#RUNTIME ERROR FileManipulation: file " + str(res) + " does not exist")
 
     # Method to execute assignment operations
     def assignOperation(self, quad):
         resAddr = quad.getResult()
+        if str(resAddr)[0] == '¿':
+            resAddr = int(resAddr[1:])
+            resAddr = int(self.getValAtMem(resAddr)) # Get memory direction at memory direction
         valAddr = quad.getLeftOperand()
-        res = self.getValAtMem(valAddr)
-        print(resAddr, valAddr, res)
-        if res == None:
+        val = self.getValAtMem(valAddr)
+        if val == None:
             sys.exit("#RUNTIME ERROR AssignOperation: cannot perform assignment operation")
-        self.setValAtMem(resAddr, res)
-        if self.debug >= 2:
+        self.setValAtMem(resAddr, val)
+        if self.debug >= 0:
             print(resAddr, " = ", self.getValAtMem(resAddr))
 
     # Method to execute arithmetic operations
@@ -123,30 +183,26 @@ class VirtualMachine:
         leftAddr = quad.getLeftOperand()
         rightAddr = quad.getRightOperand()
         resAddr = quad.getResult()
-        leftVal = self.getValAtMem(leftAddr)
-        rightVal = self.getValAtMem(rightAddr)
+        leftVal, rightVal, resAddr = self.checkVariables(leftAddr, rightAddr, resAddr)
         if leftVal == None or rightVal == None:
-            sys.exit("#RUNTIME ERROR VariableAccess Error: cannot perform arithmetic operation")
+            sys.exit("#RUNTIME ERROR VariableAccess: cannot perform arithmetic operation unassigned variable")
         opAddr = quad.getOperator()
-        if self.debug >= 2:
+        if self.debug >= 1:
             print(opAddr, leftVal, rightVal, resAddr)
         if opAddr == 6:
-            res = int(leftVal) + int(rightAddr)
-            self.setValAtMem(resAddr, res)
+            res = float(leftVal) + float(rightVal)
         elif opAddr == 7:
-            res = int(leftVal) - int(rightAddr)
-            self.setValAtMem(resAddr, res)
+            res = float(leftVal) - float(rightVal)
         elif opAddr == 8:
-            res = int(leftVal) * int(rightAddr)
-            self.setValAtMem(resAddr, res)
+            res = float(leftVal) * float(rightVal)
         elif opAddr == 9:
             if leftVal == 0 or rightVal == 0:
                 sys.exit("#RUNTIME ERROR VariableAccess: cannot perform division by 0")
-            res = int(leftVal) / int(rightAddr)
-            self.setValAtMem(resAddr, res)
+            res = float(leftVal) / float(rightVal)
         else:
-            sys.exit("#RUNTIME ERROR VariableAccess: cannot perform arithmetic operation")
-        if self.debug >= 2:
+            sys.exit("#RUNTIME ERROR VariableAccess: cannot perform arithmetic operation operator not found")
+        self.setValAtMem(resAddr, res)
+        if self.debug >= 0:
             print(resAddr, " = ", self.getValAtMem(resAddr))
 
     # Method to execute logical operations
@@ -154,8 +210,8 @@ class VirtualMachine:
         leftAddr = quad.getLeftOperand()
         rightAddr = quad.getRightOperand()
         resAddr = quad.getResult()
-        leftVal = self.getValAtMem(leftAddr)
-        rightVal = self.getValAtMem(rightAddr)
+        leftVal = int(self.getValAtMem(leftAddr))
+        rightVal = int(self.getValAtMem(rightAddr))
         if leftVal == None or rightVal == None:
             sys.exit("#RUNTIME ERROR VariableAccess: cannot perform logical operation")
         opAddr = quad.getOperator()
@@ -182,19 +238,28 @@ class VirtualMachine:
             self.setValAtMem(resAddr, res)
         else:
             sys.exit("#RUNTIME ERROR VariableAccess: cannot perform logical operation")
-        if self.debug >= 2:
-            print(opAddr, resAddr, " = ", self.getValAtMem(resAddr))
+        if self.debug >= 0:
+            print(resAddr, " = ", self.getValAtMem(resAddr))
 
     # Method to execute goto operations
     def gotoOperation(self, quad):
         self.instructionPointer = quad.getResult() - 1
+        if self.debug >= 0:
+            print("moved to ", self.instructionPointer)
 
     # Method to execute gotoF operations
     def gotofOperation(self, quad):
-        checkAddr = quad.getLeftOperand()
-        check = self.getValAtMem(checkAddr)
-        if check > 0:
+        checkAddr = int(quad.getLeftOperand())
+        if checkAddr == 0:
+            check = 0
+        elif checkAddr == 1:
+            check = 1
+        else:
+            check = self.getValAtMem(checkAddr)
+        if check > 1 or check == 0:
             self.instructionPointer = quad.getResult() - 1
+            if self.debug >= 0:
+                print("moved to ", self.instructionPointer)
 
     # Method to execute gotoV operations
     def gotovOperation(self, quad):
@@ -205,54 +270,77 @@ class VirtualMachine:
         leftAddr = quad.getLeftOperand()
         rightAddr = quad.getRightOperand()
         resAddr = quad.getResult()
-        leftVal = self.getValAtMem(leftAddr)
-        rightVal = self.getValAtMem(rightAddr)
-        resVal = self.getValAtMem(resAddr)
+        leftVal = int(self.getValAtMem(leftAddr))
+        rightVal = int(self.getValAtMem(rightAddr))
+        resVal = int(self.getValAtMem(resAddr))
         if resVal >= leftVal and resVal <= rightVal:
-            if self.debug >= 2:
+            if self.debug >= 0:
                 print('revise ', leftVal, rightVal, resVal, True)
             return True
-        if self.debug >= 2:
+        if self.debug >= 4:
             print('revise ', leftVal, rightVal, resVal, False)
         return False
 
-    # Method to execute return operations
-    def returnOperation(self, quad):
-        resAddr = quad.getResult()
-        res = self.getValAtMem(resAddr)
-        self.setValAtMem(resAddr, res)
-        if self.debug >= 2:
-            print(resAddr, " = ", self.getValAtMem(resAddr))
-
     # Method to execute Expansion of Activation Record
     def eraOperation(self, quad):
-        1
-        # self.functionStack.push(quad.getResult())
-        # tempEra = ActivationRecord(self.functionDirectory.localMem)
-        # self.localMemHandler.push(tempEra)
-        # newMem = Memory("Temporal", 80000, 85000)
-        # newEra = ActivationRecord(newMem)
-        # if self.debug >= 4:
-        #     print("Prev ERA")
-        #     tempEra.printMemory()
+        self.functionStack.push(quad.getResult())
+        self.localEra = ActivationRecord(self.localMemHandler[self.functionStack.top()])
+        self.memStack.push(self.localEra)
+        newMem = Memory("ERA", 10000, 29999)
+        newEra = ActivationRecord(newMem)
+        self.memStack.push(newEra)
+        if self.debug >= 0:
+            print("ERA for ", self.functionStack.top(), " created")
+        if self.debug >= 4:
+            print("Prev ERA ", self.functionStack.top())
+            self.localEra.printMemory()
 
     # Method to execute parameter operations
     def paramOperation(self, quad):
-        1
+        paramAddr = quad.getLeftOperand()
+        paramVal = self.checkVariable(paramAddr)
+        # if self.debug >= 4:
+            # print(self.functionStack.top())
+        if self.debug >= 0:
+            print('param', self.paramCount, paramAddr, paramVal)
+        funcParamAddr = self.functionDirectory.getVarTable(self.functionStack.top()).paramMemAddr(self.paramCount)
+        funcEra = self.memStack.top()
+        funcEra.eraMem.setValueAtAddress(funcParamAddr, paramVal)
+        self.paramCount += 1
 
     # Method to execute gosub operations
     def gosubOperation(self, quad):
-        1
-        # func = quad.getLeftOperand()
-        # self.instructionPointer = self.functionDirectory.getQuadPlace(func) - 1
+        self.paramCount = 0
+        self.memStack.push(self.localEra)
+        self.jumpStack.push(self.instructionPointer)
+        jump = quad.getResult()
+        if self.debug >= 0:
+            print("moved to ", jump)
+        self.instructionPointer = int(jump) - 1
 
     # Method to execute endproc operations
     def endprocOperation(self, quad):
-        1
+        self.memStack.pop()
+        self.instructionPointer = self.jumpStack.pop()
+        if self.debug >= 0:
+            print("moved to ", self.instructionPointer)
+
+    # Method to execute return operations
+    def returnOperation(self, quad):
+        valAddr = quad.getLeftOperand()
+        resAddr = quad.getResult()
+        val = self.getValAtMem(valAddr)
+        if self.debug >= 0:
+            print('return to ', resAddr, ' => ', val)
+        self.setValAtMem(resAddr, val)
 
     # Method to execute special function operations
     def specialOperation(self, quad):
         1
+
+    # Method to end program
+    def endOperation(self, quad):
+        sys.exit("Goodbye :)")
 
     # Method to print VM info
     def print(self, quad):

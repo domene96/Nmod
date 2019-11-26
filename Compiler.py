@@ -43,7 +43,14 @@ class Compiler:
         self.jumpStack = Stack()
         self.dimStack = Stack()
         # Debug flag
-        self.debug = 3 # 0 Mem or FuncDir or Var error, 1 currently working, 2 print funcDir, 3 print quads, 4 resolved issues, 5 print memory before VM and stacks upon insertion, 6 other warnings/info
+        self.debug = 0 # 0 Memory or FuncDir or Var error, 1 current issues, 2 print quads, 3 print funcDir, 4 resolved issues, 5 print memory before VM and stacks upon insertion, 6 other warnings/info
+
+    # Methods to handle memory directions which store memory directions
+    def checkVariable(self, resAddr, type):
+        if str(resAddr)[0] == '¿':
+            resAddr = int(resAddr[1:])
+            type = 'int'
+        return resAddr, type
 
     # MEMORY
     # Get memory address of id
@@ -63,7 +70,7 @@ class Compiler:
             return self.functionDirectory.constMem.findVal(id, 'char')
         else:
             if self.debug >= 6:
-                print("#COMPILATION WARNING MemoryManagement: Attempting to find ", id, " was not found")
+                print("#COMPILATION WARNING MemoryManagement: Attempting to find " + str(id) + " was not found")
             return id
 
     # Temporal address to store quad result
@@ -214,7 +221,7 @@ class Compiler:
     # Method to set upper bound of a dimension
     def setDimHighBound(self, val):
         if val < self.currentDimNode.low:
-            sys.exit("#COMPILATION ERROR VariableDeclaration: The upper bound ", val, " must be bigger than the lower bound ", self.currentDimNode.low)
+            sys.exit("#COMPILATION ERROR VariableDeclaration: The upper bound " + str(val) + " must be bigger than the lower bound ", self.currentDimNode.low)
         self.currentDimNode.high = val
         self.r = self.r * (int(self.currentDimNode.high) - int(self.currentDimNode.low) + 1)
 
@@ -277,11 +284,10 @@ class Compiler:
         high = self.currentDimNode.getDimHigh()
         lowAddr = self.getMemAddr(low)
         highAddr = self.getMemAddr(high)
-        aux = self.topStackOperand()
-        tempAddr = self.getMemAddr(aux)
-        quad = Quadruple(opAddr, lowAddr, highAddr, tempAddr)
+        topAddr = self.getMemAddr(top)
+        quad = Quadruple(opAddr, lowAddr, highAddr, topAddr)
         self.quadList.append(quad)
-        quad = Quadruple('revise', low, high, tempAddr)
+        quad = Quadruple('revise', low, high, topAddr)
         self.quadList2.append(quad)
         self.quadCount += 1
 
@@ -299,40 +305,48 @@ class Compiler:
     # Method to begin dimensioned variable access
     def dimVarBegin(self):
         id = self.popStackOperand()
+        self.popStackType()
         if self.verifyDimVar(id):
             self.insertStackDim({id, self.dim})
             self.insertFalseBottom()
         else:
-            sys.exit("#COMPILATION ERROR VariableAccess: The variable ", id, " is not dimensioned")
+            sys.exit("#COMPILATION ERROR VariableAccess: The variable " + str(id) + " is not dimensioned")
 
     # Method to generate dimensioned variable quadruples and verify var is dimensioned variable
-    def generateDimVarQuad(self):
+    def generateDimVarQuad(self, id):
         top = self.topStackOperand()
         self.reviseInRange(top)
         if self.currentDimNode.getDimPointer() != None:
             aux = self.popStackOperand()
+            self.popStackType()
+            # if aux == None:
+            #     sys.exit("#COMPILATION ERROR VariableAccess: Missing dimensions at variable " + str(id))
             opAddr = self.semantic.operatorToKey['*']
             resAddr = self.getTempAddr(self._FLOAT)
             m = self.currentDimNode.getDimK()
             self.insertConstant(self._FLOAT, m)
-            tempAddr = self.getMemAddr(aux)
+            auxAddr = self.getMemAddr(aux)
             mAddr = self.getMemAddr(m)
-            quad = Quadruple(opAddr, tempAddr, mAddr, resAddr)
+            quad = Quadruple(opAddr, auxAddr, mAddr, resAddr)
             self.quadList.append(quad)
-            quad = Quadruple('*', tempAddr, mAddr, resAddr)
+            quad = Quadruple('*', auxAddr, mAddr, resAddr)
             self.quadList2.append(quad)
             self.quadCount += 1
             self.insertStackOperand(resAddr)
         if self.dim > 1:
             aux2 = self.popStackOperand()
+            self.popStackType()
             aux1 = self.popStackOperand()
+            self.popStackType()
+            # if aux1 == None or aux2 == None:
+            #     sys.exit("#COMPILATION ERROR VariableAccess: Missing dimensions at variable " + str(id))
             opAddr = self.semantic.operatorToKey['+']
             aux1Addr = self.getMemAddr(aux1)
             aux2Addr = self.getMemAddr(aux2)
             resAddr = self.getTempAddr(self._FLOAT)
             quad = Quadruple(opAddr, aux1Addr, aux2Addr, resAddr)
             self.quadList.append(quad)
-            quad = Quadruple('+', aux1Addr, aux2Addr, resAddr)
+            quad = Quadruple('+', aux1, aux2, resAddr)
             self.quadList2.append(quad)
             self.quadCount += 1
             self.insertStackOperand(resAddr)
@@ -346,6 +360,7 @@ class Compiler:
     # Method to end dimensioned variable access
     def dimVarEnd(self, id):
         aux = self.popStackOperand()
+        self.popStackType()
         tempAddr = self.getTempAddr(self._FLOAT)
         resAddr = self.getTempAddr(self._FLOAT)
         # Generate quadruple to calculate memory address
@@ -361,6 +376,8 @@ class Compiler:
         self.quadCount += 1
         # Generate quadruple with resulting memory address
         baseAddr = self.getBaseAddr(id)
+        baseAddr = '(' + str(baseAddr) + ')'
+        resAddr = '¿' + str(resAddr)
         quad = Quadruple(opAddr, tempAddr, baseAddr, resAddr)
         self.quadList.append(quad)
         quad = Quadruple('+', tempAddr, baseAddr, resAddr)
@@ -369,9 +386,10 @@ class Compiler:
         self.insertStackOperand(resAddr)
         self.popStackOperator()
         self.popStackDim()
+        self.dim = 1
 
     # MAIN
-    #  Start at main
+    # Start at main
     def initialGoto(self):
         # Generate initial goto
         opAddr = self.semantic.operatorToKey['goto']
@@ -389,24 +407,24 @@ class Compiler:
 
     # Debugging prints and VM instantiation
     def mainEnd(self):
-        if self.debug >= 1:
-            self.functionDirectory.globalMem.printMemory()
-            print(self.localMemHandler)
-            self.functionDirectory.constMem.printMemory()
         if self.debug >= 2:
-            self.functionDirectory.print()
+            print("QUADRUPLES")
+            self.printQuadruples();
+            print("-------------")
             if self.debug >= 3:
-                print("QUADRUPLES")
-                self.printQuadruples();
-                print("-------------")
+                self.functionDirectory.print()
+                if self.debug >= 5:
+                    self.functionDirectory.globalMem.printMemory()
+                    print(self.localMemHandler)
+                    self.functionDirectory.constMem.printMemory()
+        # Generate END quadruple
+        self.generateEnd()
         # Execute virtual machine
         vm = VirtualMachine()
         # vm.debug = self.debug
         vm.functionDirectory = self.functionDirectory
         vm.localMemHandler = self.localMemHandler
         vm.run(self.quadList)
-        if self.debug >= 0:
-            print("Goodbye :)")
 
     # MODULES
     # Beginning of module, clear local memory
@@ -427,11 +445,12 @@ class Compiler:
         quad = Quadruple('endproc', None, None, None)
         self.quadList2.append(quad)
         self.quadCount += 1
+        self.functionDirectory.localMem.clearMemory()
 
     # Method to get the memory address of the expected return in a given function
     def getModuleReturnAddr(self, func):
         if self.functionDirectory.functionExists(func):
-            if self.debug >= 1:
+            if self.debug >= 4:
                 print(func, self.functionDirectory.getAddress(func))
             return self.functionDirectory.getAddress(func)
         else:
@@ -440,7 +459,7 @@ class Compiler:
     # Method to get the type of the expected return in a given function
     def getModuleReturnType(self, func):
         if self.functionDirectory.functionExists(func):
-            if self.debug >= 1:
+            if self.debug >= 4:
                 print(func, self.functionDirectory.getType(func))
             return self.functionDirectory.getType(func)
         else:
@@ -453,7 +472,7 @@ class Compiler:
             if id not in self.functionDirectory.getParams(func):
                 self.functionDirectory.getParams(func).append(type)
             else:
-                sys.exit("#COMPILATION ERROR ParameterDeclaration: The parameter ", id, " exists")
+                sys.exit("#COMPILATION ERROR ParameterDeclaration: The parameter " + str(id) + " exists")
         else:
             sys.exit("#COMPILATION ERROR FunctionDeclaration: The function " + str(func) + " is not defined")
 
@@ -467,7 +486,7 @@ class Compiler:
             self.paramCount = 0
             self.generateGoSub()
         else:
-            sys.exit("#COMPILATION ERROR ParameterCount: missing parameters in function call ", self.localFunc)
+            sys.exit("#COMPILATION ERROR ParameterCount: missing parameters in function call " + self.localFunc)
 
     # Validate parameter count and reset count to zero
     def resetParameterPointerSpecialFunction(self, type):
@@ -475,7 +494,7 @@ class Compiler:
             self.paramCount = 0
             self.generateSpecialGoSub(type)
         else:
-            sys.exit("#COMPILATION ERROR ParameterCount: missing parameters in special function call ", type)
+            sys.exit("#COMPILATION ERROR ParameterCount: missing parameters in special function call " + str(type))
 
     # QUADRUPLES
     # Print quadList
@@ -499,14 +518,18 @@ class Compiler:
     def generateQuad(self, func, level):
         if not self.operatorStack.empty():
             if self.checkLevelToOp(level):
-                rightOperand = self.popStackOperand()
-                rightType = self.popStackType()
                 leftOperand = self.popStackOperand()
                 leftType = self.popStackType()
+                rightOperand = self.popStackOperand()
+                rightType = self.popStackType()
                 operator = self.popStackOperator()
+                leftOperand, leftType = self.checkVariable(leftOperand, leftType)
+                rightOperand, rightType = self.checkVariable(rightOperand, rightType)
+                if self.debug >= 4:
+                    print(operator, leftOperand, leftType, rightOperand, rightType)
                 if leftType == None or rightType == None:
                     resType = None
-                    sys.exit("#COMPILATION ERROR GenerateQuadruple: processing variable types: ", leftType, rightType)
+                    sys.exit("#COMPILATION ERROR GenerateQuadruple: processing variable types: " + str(leftType) + str(rightType))
                 else:
                     resType = self.semantic.semanticCube[operator][leftType][rightType]
                 if resType != 'error' and resType != None:
@@ -522,7 +545,7 @@ class Compiler:
                     self.insertStackOperand(resAddr)
                     self.insertStackType(resType)
                 else:
-                    sys.exit("#COMPILATION ERROR GenerateQuadruple: ", leftType, operator, rightType, " generates ", resType)
+                    sys.exit("#COMPILATION ERROR GenerateQuadruple: " + str(leftType) + str(operator) + str(rightType) + " generates " + str(resType))
 
     # Method to generate quadruples of an assignment
     def generateAssignmentQuad(self):
@@ -530,23 +553,23 @@ class Compiler:
             operator = self.popStackOperator()
             opAddr = self.semantic.operatorToKey[operator]
             val = self.popStackOperand()
+            self.popStackType()
             valAddr = self.getMemAddr(val)
             res = self.popStackOperand()
-            resAddr = self.getMemAddr(res)
             self.popStackType()
+            resAddr = self.getMemAddr(res)
             quad = Quadruple(opAddr, valAddr, None, resAddr)
             self.quadList.append(quad)
             quad = Quadruple(operator, val, None, res)
             self.quadList2.append(quad)
             self.quadCount += 1
-            self.insertStackOperand(resAddr)
         else:
             sys.exit("#COMPILATION ERROR GenerateQuadruple: assignment quadruples")
 
-    # Method to generate quadruples for print / read / return
+    # Method to generate quadruples for print / read / end
     def generateCommonQuad(self, type):
         if self.operandStack.empty() and self.typeStack.empty():
-            sys.exit("#COMPILATION ERROR GenerateQuadruple: ", type, " quadruples")
+            sys.exit("#COMPILATION ERROR GenerateQuadruple: " + str(type) + " quadruples")
         else:
             self.popStackType()
             opAddr = self.semantic.operatorToKey[type]
@@ -562,10 +585,11 @@ class Compiler:
     def conditionStart(self, type):
         expType = self.popStackType()
         if expType != self._INT:
-            sys.exit("#COMPILATION ERROR GenerateQuadruple: ", type, " expression quadruples")
+            sys.exit("#COMPILATION ERROR GenerateQuadruple: " + str(type) + " expression quadruples")
         else:
             opAddr = self.semantic.operatorToKey['gotoF']
-            condition = self.getMemAddr(self.popStackOperand())
+            condition = self.popStackOperand()
+            conditionAddr = self.getMemAddr(condition)
             quad = Quadruple(opAddr, condition, None, None)
             self.quadList.append(quad)
             quad = Quadruple('gotoF', condition, None, None)
@@ -615,7 +639,7 @@ class Compiler:
             self.quadList[pos].setResult(self.quadCount)
             self.quadList2[pos].setResult(self.quadCount)
         else:
-            sys.exit("#COMPILATION ERROR GenerateQuadruple: While FILL goto quadruples for pos ", pos)
+            sys.exit("#COMPILATION ERROR GenerateQuadruple: While FILL goto quadruples for pos " + str(pos))
 
     # Method to generate era quadruple
     def generateERA(self, func):
@@ -634,40 +658,50 @@ class Compiler:
         if self.debug >= 4:
             print(opAddr,resType,self.paramCount,self.localFunc,len(self.functionDirectory.getParams(self.localFunc)))
         if self.paramCount >= len(self.functionDirectory.getParams(self.localFunc)):
-            sys.exit("#COMPILATION ERROR Parameter: Parameter count out of bounds ", self.paramCount, " for call ", self.localFunc)
+            sys.exit("#COMPILATION ERROR Parameter: Parameter count out of bounds " + str(self.paramCount) + " for call " + str(self.localFunc))
         else:
             paramType = self.functionDirectory.getParams(self.localFunc)[self.paramCount]
         if resType == paramType:
             parameter = "par" + str(self.paramCount)
-            tempAddr = self.getMemAddr(self.popStackOperand())
+            temp = self.popStackOperand()
+            tempAddr = self.getMemAddr(temp)
             if self.debug >= 4:
                 print(parameter, tempAddr)
             quad = Quadruple(opAddr, tempAddr, None, parameter)
             self.quadList.append(quad)
-            quad = Quadruple('param', tempAddr, None, parameter)
+            quad = Quadruple('param', temp, None, parameter)
             self.quadList2.append(quad)
             self.quadCount += 1
         else:
-            sys.exit("#COMPILATION ERROR GenerateQuadruple: Type mismatch in action parameter quadruples, expected: ", paramType, " , received: ", resType)
+            sys.exit("#COMPILATION ERROR GenerateQuadruple: Type mismatch in action parameter quadruples, expected: " + str(paramType) + " , received: " + str(resType))
 
     # Method to generate gosub quadruple
     def generateGoSub(self):
-        resType = self.functionDirectory.getType(self.localFunc)
-        resAddr = self.getTempAddr(resType)
+        res = self.functionDirectory.getQuadPlace(self.localFunc)
         opAddr = self.semantic.operatorToKey['gosub']
-        quad = Quadruple(opAddr, self.localFunc, None, resAddr)
+        quad = Quadruple(opAddr, self.localFunc, None, res)
         self.quadList.append(quad)
-        quad = Quadruple('gosub', self.localFunc, None, resAddr)
+        quad = Quadruple('gosub', self.localFunc, None, res)
         self.quadList2.append(quad)
         self.quadCount += 1
-        # self.generateFunctionGoto()
-        self.insertStackOperand(resAddr)
-        self.insertStackType(resType)
+
+    # Method to generate return quadruple
+    def generateReturn(self):
+        val = self.popStackOperand()
+        valAddr = self.getMemAddr(val)
+        resType = self.functionDirectory.getType(self.localFunc)
+        resAddr = self.getTempAddr(resType)
+        opAddr = self.semantic.operatorToKey['r_return']
+        quad = Quadruple(opAddr, valAddr, None, resAddr)
+        self.quadList.append(quad)
+        quad = Quadruple('r_return', val, None, resAddr)
+        self.quadList2.append(quad)
+        self.quadCount += 1
 
     # Method to generate era quadruple for special functions
     def generateSpecialERA(self, type):
         if type not in self.semantic.specialFunc:
-            sys.exit("#COMPILATION ERROR GenerateQuadruple Error: special function ", type, " quadruples")
+            sys.exit("#COMPILATION ERROR GenerateQuadruple Error: special function " + str(type) + " quadruples")
         else:
             # Special function ERA quadruple
             opAddr = self.semantic.operatorToKey[type]
@@ -680,7 +714,7 @@ class Compiler:
     # Method to generate paramater quadruples for special functions
     def generateSpecialActionParam(self, type):
         if type not in self.semantic.specialFunc:
-            sys.exit("#COMPILATION ERROR GenerateQuadruple Error: special function ", type, " quadruples")
+            sys.exit("#COMPILATION ERROR GenerateQuadruple Error: special function " + str(type) + " quadruples")
         else:
             # Special function parameter quadruples
             self.generateQuad('global', 'exp')
@@ -689,14 +723,15 @@ class Compiler:
             if self.debug >= 4:
                 print(self.paramCount, len(self.semantic.specialFunc[type][1]))
             if self.paramCount >= len(self.semantic.specialFunc[type][1]):
-                sys.exit("#COMPILATION ERROR ParameterDeclaration: Parameter count out of bounds ", self.paramCount, " for call ", type)
+                sys.exit("#COMPILATION ERROR ParameterDeclaration: Parameter count out of bounds " + str(self.paramCount) + " for call " + str(type))
             else:
                 paramType = self.semantic.specialFunc[type][1][self.paramCount]
             if self.debug >= 4:
                 print(type, self.paramCount, resType, paramType)
             if resType == paramType:
                 parameter = "par" + str(self.paramCount)
-                tempAddr = self.getMemAddr(self.popStackOperand())
+                temp = self.popStackOperand()
+                tempAddr = self.getMemAddr(temp)
                 if self.debug >= 4:
                     print(parameter, tempAddr)
                 quad = Quadruple(opAddr, tempAddr, None, parameter)
@@ -705,26 +740,32 @@ class Compiler:
                 self.quadList2.append(quad)
                 self.quadCount += 1
             else:
-                sys.exit("#COMPILATION ERROR GenerateQuadruple: Type mismatch in action parameter quadruples, expected: ", paramType, " , received: ", resType, " for special function ", type)
+                sys.exit("#COMPILATION ERROR GenerateQuadruple: Type mismatch in action parameter quadruples, expected: " + str(paramType) + " , received: " + str(resType) + " for special function " + str(type))
 
     # Method to generate gosub quadruple for special functions
     def generateSpecialGoSub(self, type):
         if type not in self.semantic.specialFunc:
-            sys.exit("#COMPILATION ERROR GenerateQuadruple: special function ", type, " quadruples")
+            sys.exit("#COMPILATION ERROR GenerateQuadruple: special function " + str(type) + " quadruples")
         else:
             # Special function GOSUB quadruple
-            resType = self.semantic.specialFunc[type][0]
-            resAddr = self.getTempAddr(resType)
+            res = self.functionDirectory.getQuadPlace(self.localFunc)
             opAddr = self.semantic.operatorToKey['gosub']
             if self.debug >= 4:
-                print(opAddr, type, None, resAddr)
-            quad = Quadruple(opAddr, type, None, resAddr)
+                print(opAddr, type, None, res)
+            quad = Quadruple(opAddr, type, None, res)
             self.quadList.append(quad)
-            quad = Quadruple('gosub', type, None, resAddr)
+            quad = Quadruple('gosub', type, None, res)
             self.quadList2.append(quad)
             self.quadCount += 1
-            self.insertStackOperand(resAddr)
-            self.insertStackType(resType)
+
+    # Method to generate end quadruple
+    def generateEnd(self):
+        opAddr = self.semantic.operatorToKey['end']
+        quad = Quadruple(opAddr, None, None, None)
+        self.quadList.append(quad)
+        quad = Quadruple('end', None, None, None)
+        self.quadList2.append(quad)
+        self.quadCount += 1
 
     # STACKS
     # false bottom
@@ -740,18 +781,20 @@ class Compiler:
     # inserts
     def insertStackOperator(self, operator):
         self.operatorStack.push(operator)
+        if self.debug >= 5:
+            self.operatorStack.print()
 
     def insertStackOperand(self, operand):
         if isinstance(operand, str):
             operand = self.cutID(operand)
         self.operandStack.push(operand)
         if self.debug >= 5:
-            print(self.quadCount)
             self.operandStack.print()
 
     def insertStackType(self, type):
         self.typeStack.push(type)
         if self.debug >= 5:
+            print(self.quadCount)
             self.typeStack.print()
 
     def insertStackJump(self, jump):

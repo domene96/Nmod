@@ -6,9 +6,7 @@ import sys
 
 
 from Compiler import *
-# from VirtualMachine import *
 c = Compiler()
-# vm = VirtualMachine()
 
 
 def serializedATN():

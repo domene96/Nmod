@@ -6,9 +6,7 @@ else:
     from NmodParser import NmodParser
 
 from Compiler import *
-# from VirtualMachine import *
 c = Compiler()
-# vm = VirtualMachine()
 
 
 # This class defines a complete listener for a parse tree produced by NmodParser.
