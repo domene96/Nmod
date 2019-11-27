@@ -1,0 +1,48 @@
+/# Example program for compiler Nmod
+  Compiler developed by: domene96 aka A01192913 #/
+
+nmod NmodExample:
+
+# VARIABLES
+var int : example1, Example2, _example3, example4
+var int : 123abcValid
+var float : example7, mat[1:4,-2:5]
+
+main() {
+  # Set
+  example1 = 1
+  Example2 = 4
+  _example3 = -2
+  example4 = 5
+
+  print("Fill matrix with")
+  123abcValid = 123
+  print(123abcValid)
+
+  while(example4 >= _example3) {
+    while(Example2 >= example1) {
+      mat[Example2, example4] = 123abcValid
+      123abcValid = 123abcValid + 1
+      Example2 = Example2 - 1
+    }
+    123abcValid = 123abcValid + 100
+    example4 = example4 - 1
+  }
+
+  # Get
+  example1 = 1
+  Example2 = 4
+  _example3 = -2
+  example4 = 5
+
+  print("Print matrix")
+
+  while(example4 >= _example3) {
+    while(Example2 >= example1) {
+      123abcValid = mat[Example2, example4]
+      print(123abcValid)
+      Example2 = Example2 - 1
+    }
+    example4 = example4 - 1
+  }
+}

@@ -1,0 +1,60 @@
+/# Example program for compiler Nmod
+  Compiler developed by: domene96 aka A01192913 #/
+
+nmod NmodExample:
+
+# TC03. Variable declaration
+var int : thisIsAnIntDeclaredAndAll
+
+# TC05. Multidimensional Variable declaration
+var float : matrix[0:99]
+
+# TC10. Function declaration
+helloWorld <- void func(int matricula) {
+  print("Hola ")
+  print(matricula)
+}
+
+main() {
+  # TC01. Print statement
+  print("Hola maestra!")
+
+  # TC02. Read statement
+  read("helper.txt")
+
+  # TC04. Variable assignment
+  thisIsAnIntDeclaredAndAll = 10
+
+  # TC06. Multidimensional Variable assignment
+  matrix[0] = thisIsAnIntDeclaredAndAll
+
+  # TC07. Arithmetic operations
+  matrix[1] = 1 + 8.7
+  matrix[2] = 100 - 8700.8
+  matrix[3] = 2 * 8.7
+  matrix[4] = 34 / 8.7
+
+  # TC08. Logical operations
+  if (matrix[4] > 3) {
+    print("yes")
+  }
+  else {
+    print("no")
+  }
+
+  # TC09. Cycles
+  thisIsAnIntDeclaredAndAll = 0
+  while(thisIsAnIntDeclaredAndAll < 5) {
+    print(matrix[thisIsAnIntDeclaredAndAll])
+  }
+
+  # TC11. Function calling
+  helloWorld(1192913)
+
+  # TC12. Recursion
+
+  # TC13. Special functions
+
+  # TC14. Error
+  whoAmI = "false"
+}

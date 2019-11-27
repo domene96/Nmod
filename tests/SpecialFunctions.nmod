@@ -1,0 +1,65 @@
+/# Example program for compiler Nmod
+  Compiler developed by: domene96 aka A01192913 #/
+
+nmod NmodExample:
+
+main() {
+  /# Special Functions
+  rnom(example6[5], 77*2, _example3)
+  rexp(example7, example7)
+  rgamma(example7, 1.0, example7, 2.6, 3*12.5, example7)
+  points(arrX, arrY)
+  lines(example7, example7)
+  /#
+  text(1, 2, "hi")
+  barplot('a', arrX, arrY, arrProbs)
+  piechart('b', arrX, arrY, arrProbs)
+  xyplot('c', arrX, arrY, arrProbs)
+  densityplot('d', arrX, arrY, arrProbs)
+  histogram('e', arrX, arrY, arrProbs)
+  /#
+  sin()
+  cos()
+  tan()
+  asin()
+  acos()
+  atan()
+  atan2()
+  /#
+  log()
+  log10()
+  exponent()
+  f_max()
+  f_min()
+  f_range()
+  f_sum()
+  diff()
+  prod()
+  /#
+  mean()
+  median()
+  quantile()
+  rank()
+  var()
+  sd()
+  cor()
+  cov()
+  f_round()
+  /#
+  transpose()
+  diagonal()
+  ginv()
+  rowsum()
+  colsum()
+  /#
+  load()
+  data()
+  library()
+  /#
+  rpois()
+  rweibull()
+  rbinom()
+  rgeom()
+  runif()
+  #/
+}

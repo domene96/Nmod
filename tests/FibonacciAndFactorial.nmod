@@ -1,0 +1,69 @@
+/# Example program for compiler Nmod
+  Compiler developed by: domene96 aka A01192913 #/
+
+nmod NmodExample:
+
+# MODULES
+cyclicFib <- int func(int x)
+  var int : num1, num2, count, sum
+{
+  num1 = 0
+  num2 = 1
+  count = 2
+  if (x <= 0) {
+    print("Plese enter a positive integer")
+  }
+  else {
+    if (x equal 1) {
+      print("Fibonacci sequence:")
+      print(num1)
+    }
+    else {
+      print("Fibonacci sequence:")
+      print(num1)
+      print(num2)
+      while (count < x) {
+        sum = num1 + num2
+        print(sum)
+        num1 = num2
+        num2 = sum
+        count = count + 1
+      }
+    }
+  }
+  return sum
+}
+
+fibonacci <- int func(int x) {
+  if (x < 2) {
+    return x
+  }
+  else {
+    return fibonacci(x - 1) + fibonacci(x - 2)
+  }
+}
+
+cyclicFactorial <- int func(int x)
+  var int : res
+{
+  res = 1
+  while (x > 1) {
+    res = res * x
+    x = x - 1
+  }
+  return res
+}
+
+factorial <- int func(int x) {
+  if (x equal 1) {
+    return 1
+  }
+  return x * factorial(x - 1)
+}
+
+main() {
+  cyclicFib(25)
+  cyclicFactorial(6)
+  #fibonacci(18)
+  #factorial(8)
+}

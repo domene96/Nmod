@@ -1,0 +1,255 @@
+/# Example program for compiler Nmod
+  Compiler developed by: domene96 aka A01192913 #/
+
+nmod NmodExample:
+
+# VARIABLES
+var int : example1, Example2, _example3, example4[-3:8]
+var int : 123abcValid
+var char : example5, example6[0:99], ghi[8:80]
+var float : example7, mat[1:4,-2:5]
+var float : cube[0:2,-3:8,1:4]
+var float : arrX[0:1000], arrY[0:1000], arrTexts[-10:-5], arrProbs[0:100], arrQuantiles[0:3]
+
+# MODULES
+testFunction <- char func(int example5) {
+  print(example5)
+  return example1
+}
+
+helloWorld <- void func()
+  var int : example10
+  var char : example11
+{
+  example10 = 10
+  example11 = 'c'
+  print("Hello World!")
+  print("ya! 5")
+  print(example10)
+  print(example11)
+  print('c')
+  print(10)
+  print(10.5)
+}
+
+cyclicFib <- int func(int x)
+  var int : num1, num2, count, sum
+{
+  num1 = 0
+  num2 = 1
+  count = 2
+  if (x <= 0) {
+    print("Please enter a positive integer")
+  }
+  else {
+    if (x equal 1) {
+      print("Fibonacci sequence:")
+      print(num1)
+    }
+    else {
+      print("Fibonacci sequence:")
+      print(num1)
+      print(num2)
+      while (count < x) {
+        sum = num1 + num2
+        print(sum)
+        num1 = num2
+        num2 = sum
+        count = count + 1
+      }
+    }
+  }
+  return sum
+}
+
+/#
+fibonacci <- int func(int x) {
+  if (x < 2) {
+    return x
+  }
+  else {
+    return fibonacci(x - 1) + fibonacci(x - 2)
+  }
+}
+#/
+
+cyclicFactorial <- int func(int x)
+  var int : res
+{
+  res = 1
+  while (x > 1) {
+    res = res * x
+    x = x - 1
+  }
+  return res
+}
+
+/#
+factorial <- int func(int x) {
+  if (x equal 1) {
+    return 1
+  }
+  return x * factorial(x-1)
+}
+#/
+
+nothing <- float func(float a, char abc, float b, float c)
+  var int : d
+  var float : iiiii[0:100]
+{
+  abc = 'f'
+  print(abc)
+  a = 1
+  print(a)
+  b = 1.1
+  print(b)
+  c = a - b
+  print(c)
+  d = a / b
+  print(d)
+  a = a * 1.2
+  print(a)
+  a = d * b * c * 1.2
+  print(a)
+  example7 = 2
+  a = a + example7 * 1
+  print(a)
+  a = d + example7 * 0
+  print(a)
+  b = d * example7 * 0
+  print(b)
+}
+
+# MAIN BLOCK
+main() {
+  library("math")
+  library("vector")
+  print("Tell me something: ")
+  read("Error.py")
+  read("string")
+  read("file.txt")
+
+  example1 = 92
+  #print(cube[2])
+  print(cube[2,3,1])
+
+  nothing(1 + 0.5, 'a', 5.6, 9.9)
+  print(example6[example1])
+  print(example6[5+3])
+  print(cube[2, 2*0, 3])
+
+  example6[0] = 0
+  example6[1] = 1
+  example6[2] = 2
+  example6[3] = 3
+  example6[4] = 4
+  print(example6[3])
+
+  example4[1] = 1
+  while (example4[1] > 0) {
+    print("Tell me something: ")
+    print(_example3)
+    read("string")
+    read(10)
+    #read(string)
+
+    /# Special Functions
+    rnom(example6[5], 77*2, _example3)
+    rexp(example7, example7)
+    rgamma(example7, 1.0, example7, 2.6, 3*12.5, example7)
+    points(arrX, arrY)
+    lines(example7, example7)
+    /#
+    text(1, 2, "hi")
+    barplot('a', arrX, arrY, arrProbs)
+    piechart('b', arrX, arrY, arrProbs)
+    xyplot('c', arrX, arrY, arrProbs)
+    densityplot('d', arrX, arrY, arrProbs)
+    histogram('e', arrX, arrY, arrProbs)
+    /#
+    sin()
+    cos()
+    tan()
+    asin()
+    acos()
+    atan()
+    atan2()
+    /#
+    log()
+    log10()
+    exponent()
+    f_max()
+    f_min()
+    f_range()
+    f_sum()
+    diff()
+    prod()
+    /#
+    mean()
+    median()
+    quantile()
+    rank()
+    var()
+    sd()
+    cor()
+    cov()
+    f_round()
+    /#
+    transpose()
+    diagonal()
+    ginv()
+    rowsum()
+    colsum()
+    /#
+    load()
+    data()
+    library()
+    /#
+    rpois()
+    rweibull()
+    rbinom()
+    rgeom()
+    runif
+    #/
+
+    print(cyclicFib(18))
+    /#
+    print(fibonacci(18))
+    print(pow(2,18))
+    print(sum(2,18))
+    print(sqrt(2,18))
+    print(factorial(18))
+    print(cyclicFactorial(18))
+    #/
+
+    if (example1 > 1000) {
+      _example3 = 5
+      #rnom(example6[13], example1, _example3, _example3)
+
+      if (1 and 1) {
+        if (1 or 1) {
+          if (1 equal 1) {
+            if (1 >= 1) {
+              example7 = 8.0 / 2.5
+            }
+          }
+          else {
+            _example3 = 7
+            print(_example3)
+            #_example3 = histogram(example1, Example2, _example3, example5)
+            print(_example3)
+          }
+        }
+        while (_example3 >= 0) {
+          arrX[80] = example1
+          _example3 = _example3 - 1
+        }
+      }
+
+      return _example3
+    }
+    example4[1] = example4[1] - 1
+  }
+
+  return example1
+}

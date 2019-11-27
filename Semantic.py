@@ -8,7 +8,7 @@ class Semantic:
     _FLOAT = 'float'
     _CHAR = 'char'
     _VISUAL = 'void' # graphics
-    _STRING = 'void' # 'char[]'
+    _STRING = 'char' # 'char[]'
 
     # Semantic Types
     semanticCube = {

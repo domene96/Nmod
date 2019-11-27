@@ -1,0 +1,47 @@
+/# Example program for compiler Nmod
+  Compiler developed by: domene96 aka A01192913 #/
+
+nmod NmodExample:
+
+evenLessNothing <- void func()
+  var char : abc
+{
+  abc = 'f'
+  print(abc)
+}
+
+nothing <- float func(float a, char abc, float b, float c)
+  var int : d, example7
+  var char : z
+{
+  abc = 'f'
+  print(abc)
+  z = 'k'
+  abc = z
+  print(abc)
+  a = 1
+  print(a)
+  b = 1.1
+  print(b)
+  c = a - b
+  print(c)
+  d = a / b
+  print(d)
+  a = a * 1.2
+  print(a)
+  a = d * b * c * 1.2
+  print(a)
+  example7 = 2
+  a = a + example7 * 1
+  print(a)
+  a = d + example7 * 0
+  print(a)
+  b = d * example7 * 0
+  print(b)
+  return b
+}
+
+main() {
+  nothing(2.5, 'a', 7.0, 99.9)
+  #evenLessNothing()
+}

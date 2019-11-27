@@ -245,7 +245,7 @@ class VirtualMachine:
     def gotoOperation(self, quad):
         self.instructionPointer = quad.getResult() - 1
         if self.debug >= 0:
-            print("moved to ", self.instructionPointer)
+            print("moved to ", self.instructionPointer + 1)
 
     # Method to execute gotoF operations
     def gotofOperation(self, quad):
@@ -259,7 +259,7 @@ class VirtualMachine:
         if check > 1 or check == 0:
             self.instructionPointer = quad.getResult() - 1
             if self.debug >= 0:
-                print("moved to ", self.instructionPointer)
+                print("moved to ", self.instructionPointer + 1)
 
     # Method to execute gotoV operations
     def gotovOperation(self, quad):
