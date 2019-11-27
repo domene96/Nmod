@@ -168,11 +168,8 @@ class VirtualMachine:
     # Method to execute assignment operations
     def assignOperation(self, quad):
         resAddr = quad.getResult()
-        if str(resAddr)[0] == '¿':
-            resAddr = int(resAddr[1:])
-            resAddr = int(self.getValAtMem(resAddr)) # Get memory direction at memory direction
         valAddr = quad.getLeftOperand()
-        val = self.getValAtMem(valAddr)
+        val = self.checkVariable(valAddr)
         if val == None:
             sys.exit("#RUNTIME ERROR AssignOperation: cannot perform assignment operation")
         self.setValAtMem(resAddr, val)
@@ -211,8 +208,8 @@ class VirtualMachine:
         leftAddr = quad.getLeftOperand()
         rightAddr = quad.getRightOperand()
         resAddr = quad.getResult()
-        leftVal = int(self.getValAtMem(leftAddr))
-        rightVal = int(self.getValAtMem(rightAddr))
+        leftVal = self.checkVariable(leftAddr)
+        rightVal = self.checkVariable(rightAddr)
         if leftVal == None or rightVal == None:
             sys.exit("#RUNTIME ERROR VariableAccess: cannot perform logical operation")
         opAddr = quad.getOperator()
@@ -271,9 +268,9 @@ class VirtualMachine:
         leftAddr = quad.getLeftOperand()
         rightAddr = quad.getRightOperand()
         resAddr = quad.getResult()
-        leftVal = int(self.getValAtMem(leftAddr))
-        rightVal = int(self.getValAtMem(rightAddr))
-        resVal = int(self.getValAtMem(resAddr))
+        leftVal = self.getValAtMem(leftAddr)
+        rightVal = self.getValAtMem(rightAddr)
+        resVal = self.getValAtMem(resAddr)
         if resVal >= leftVal and resVal <= rightVal:
             if self.debug >= 0:
                 print('revise ', leftVal, rightVal, resVal, True)
