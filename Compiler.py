@@ -43,7 +43,7 @@ class Compiler:
         self.jumpStack = Stack()
         self.dimStack = Stack()
         # Debug flag
-        self.debug = 0 # 0 Memory or FuncDir or Var error, 1 current issues, 2 print quads, 3 print funcDir, 4 resolved issues, 5 print memory before VM and stacks upon insertion, 6 other warnings/info
+        self.debug = 2 # 0 Memory or FuncDir or Var error, 1 current issues, 2 print quads, 3 print funcDir, 4 resolved issues, 5 print memory before VM and stacks upon insertion, 6 other warnings/info
 
     # Methods to handle memory directions which store memory directions
     def checkVariable(self, resAddr, type):
@@ -482,7 +482,9 @@ class Compiler:
 
     # Validate parameter count and reset count to zero
     def resetParameterPointer(self):
-        if self.paramCount == len(self.functionDirectory.getParams(self.localFunc)) - 1:
+        if self.paramCount == 0:
+            self.generateGoSub()
+        elif self.paramCount == len(self.functionDirectory.getParams(self.localFunc)) - 1:
             self.paramCount = 0
             self.generateGoSub()
         else:
@@ -518,10 +520,10 @@ class Compiler:
     def generateQuad(self, func, level):
         if not self.operatorStack.empty():
             if self.checkLevelToOp(level):
-                leftOperand = self.popStackOperand()
-                leftType = self.popStackType()
                 rightOperand = self.popStackOperand()
                 rightType = self.popStackType()
+                leftOperand = self.popStackOperand()
+                leftType = self.popStackType()
                 operator = self.popStackOperator()
                 leftOperand, leftType = self.checkVariable(leftOperand, leftType)
                 rightOperand, rightType = self.checkVariable(rightOperand, rightType)
@@ -553,11 +555,19 @@ class Compiler:
             operator = self.popStackOperator()
             opAddr = self.semantic.operatorToKey[operator]
             val = self.popStackOperand()
-            self.popStackType()
-            valAddr = self.getMemAddr(val)
             res = self.popStackOperand()
-            self.popStackType()
+            # if self.debug >= 1:
+            #     print(res, operator, val)
+            valType = self.popStackType()
+            resType = self.popStackType()
+            if val == self.getMemAddr(val):
+                val, valType = self.checkVariable(val, valType)
+            if res == self.getMemAddr(res):
+                res, resType = self.checkVariable(res, resType)
+            valAddr = self.getMemAddr(val)
             resAddr = self.getMemAddr(res)
+            if self.debug >= 4:
+                print(resAddr, res, operator, valAddr, val)
             quad = Quadruple(opAddr, valAddr, None, resAddr)
             self.quadList.append(quad)
             quad = Quadruple(operator, val, None, res)

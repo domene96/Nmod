@@ -72,6 +72,7 @@ class VirtualMachine:
 
     # Run virtual machine
     def run(self, quads):
+        print("Virtual Machine Running --- --- --- ---")
         self.quadruples = quads
         self.functionStack.push('global')
         while self.instructionPointer < len(self.quadruples):
@@ -154,6 +155,7 @@ class VirtualMachine:
     def readOperation(self, quad):
         resAddr = quad.getResult()
         res = self.getValAtMem(resAddr)
+        res = res[1:-1]
         try:
             file = open(res, 'r')
             if file.mode == 'r':
@@ -161,8 +163,7 @@ class VirtualMachine:
                 if self.debug >= 0:
                     print("reading ", content)
         except:
-            print("#RUNTIME ERROR FileManipulation: file " + str(res) + " does not exist")
-            # sys.exit("#RUNTIME ERROR FileManipulation: file " + str(res) + " does not exist")
+            sys.exit("#RUNTIME ERROR FileManipulation: file " + str(res) + " does not exist")
 
     # Method to execute assignment operations
     def assignOperation(self, quad):
@@ -289,7 +290,7 @@ class VirtualMachine:
         newMem = Memory("ERA", 10000, 29999)
         newEra = ActivationRecord(newMem)
         self.memStack.push(newEra)
-        if self.debug >= 0:
+        if self.debug >= 4:
             print("ERA for ", self.functionStack.top(), " created")
         if self.debug >= 4:
             print("Prev ERA ", self.functionStack.top())
@@ -301,11 +302,11 @@ class VirtualMachine:
         paramVal = self.checkVariable(paramAddr)
         # if self.debug >= 4:
             # print(self.functionStack.top())
-        if self.debug >= 0:
+        if self.debug >= 4:
             print('param', self.paramCount, paramAddr, paramVal)
         funcParamAddr = self.functionDirectory.getVarTable(self.functionStack.top()).paramMemAddr(self.paramCount)
-        funcEra = self.memStack.top()
-        funcEra.eraMem.setValueAtAddress(funcParamAddr, paramVal)
+        self.localEra = self.memStack.top()
+        self.localEra.eraMem.setValueAtAddress(funcParamAddr, paramVal)
         self.paramCount += 1
 
     # Method to execute gosub operations
@@ -336,7 +337,7 @@ class VirtualMachine:
 
     # Method to execute special function operations
     def specialOperation(self, quad):
-        1
+        print("Special operation " + str(quad.getOperator()) + " is not available yet, try again later.")
 
     # Method to end program
     def endOperation(self, quad):

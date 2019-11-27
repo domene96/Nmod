@@ -14,6 +14,10 @@ nothing <- float func(float a, char abc, float b, float c)
   var int : d, example7
   var char : z
 {
+  print(a)
+  print(abc)
+  print(b)
+  print(c)
   abc = 'f'
   print(abc)
   z = 'k'
@@ -43,5 +47,5 @@ nothing <- float func(float a, char abc, float b, float c)
 
 main() {
   nothing(2.5, 'a', 7.0, 99.9)
-  #evenLessNothing()
+  evenLessNothing()
 }

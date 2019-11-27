@@ -1,2 +1,21 @@
-#find
-#sort
+/# Example program for compiler Nmod
+  Compiler developed by: domene96 aka A01192913 #/
+
+nmod NmodExample:
+
+find <- int func(int value)
+{
+  print(value)
+}
+
+sort <- void func(float object)
+  var int : low, high
+{
+  low = object.getDimLow()
+  high = object.getDimHigh()
+
+  while()
+}
+
+main() {
+}

@@ -15,12 +15,19 @@ helloWorld <- void func(int matricula) {
   print(matricula)
 }
 
+factorial <- int func(int x) {
+  if (x < 1) {
+    return x
+  }
+  return x * factorial(x - 1)
+}
+
 main() {
   # TC01. Print statement
   print("Hola maestra!")
 
   # TC02. Read statement
-  read("helper.txt")
+  #read("helper.txt")
 
   # TC04. Variable assignment
   thisIsAnIntDeclaredAndAll = 10
@@ -46,15 +53,18 @@ main() {
   thisIsAnIntDeclaredAndAll = 0
   while(thisIsAnIntDeclaredAndAll < 5) {
     print(matrix[thisIsAnIntDeclaredAndAll])
+    thisIsAnIntDeclaredAndAll = thisIsAnIntDeclaredAndAll - 1
   }
 
   # TC11. Function calling
   helloWorld(1192913)
 
   # TC12. Recursion
+  factorial(9)
 
   # TC13. Special functions
+  rexp(2.0, 5.5)
 
   # TC14. Error
-  whoAmI = "false"
+  #whoAmI = "false"
 }

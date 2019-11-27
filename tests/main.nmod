@@ -24,8 +24,8 @@ helloWorld <- void func()
   example10 = 10
   example11 = 'c'
   print("Hello World!")
-  print("ya! 5")
-  print(example10)
+  print("Hello World!", "5")
+  print(example10, example10)
   print(example11)
   print('c')
   print(10)
@@ -39,7 +39,7 @@ cyclicFib <- int func(int x)
   num2 = 1
   count = 2
   if (x <= 0) {
-    print("Please enter a positive integer")
+    print("Plese enter a positive integer")
   }
   else {
     if (x equal 1) {
@@ -89,7 +89,7 @@ factorial <- int func(int x) {
   if (x equal 1) {
     return 1
   }
-  return x * factorial(x-1)
+  return x * factorial(num-1)
 }
 #/
 
@@ -103,7 +103,8 @@ nothing <- float func(float a, char abc, float b, float c)
   print(a)
   b = 1.1
   print(b)
-  c = a - b
+  d = 4
+  c = d - b
   print(c)
   d = a / b
   print(d)
@@ -126,8 +127,7 @@ main() {
   library("vector")
   print("Tell me something: ")
   read("Error.py")
-  read("string")
-  read("file.txt")
+  #read("temp.txt")
 
   example1 = 92
   #print(cube[2])
@@ -151,21 +151,22 @@ main() {
     print(_example3)
     read("string")
     read(10)
-    #read(string)
+    # read(string)
 
-    /# Special Functions
+    # Special Functions
     rnom(example6[5], 77*2, _example3)
     rexp(example7, example7)
-    rgamma(example7, 1.0, example7, 2.6, 3*12.5, example7)
+    rgamma(example7, example7, example7, example7, example7, example7)
+    /#
     points(arrX, arrY)
     lines(example7, example7)
+    text(1, 2, 9.0)
     /#
-    text(1, 2, "hi")
-    barplot('a', arrX, arrY, arrProbs)
-    piechart('b', arrX, arrY, arrProbs)
-    xyplot('c', arrX, arrY, arrProbs)
-    densityplot('d', arrX, arrY, arrProbs)
-    histogram('e', arrX, arrY, arrProbs)
+    barplot()
+    piechart()
+    xyplot()
+    densityplot()
+    histogram()
     /#
     sin()
     cos()
