@@ -318,11 +318,11 @@ class Compiler:
         self.reviseInRange(top)
         if self.currentDimNode.getDimPointer() != None:
             aux = self.popStackOperand()
-            self.popStackType()
+            resType = self.popStackType()
             # if aux == None:
             #     sys.exit("#COMPILATION ERROR VariableAccess: Missing dimensions at variable " + str(id))
             opAddr = self.semantic.operatorToKey['*']
-            resAddr = self.getTempAddr(self._FLOAT)
+            resAddr = self.functionDirectory.globalMem.reserveMemoryAddresses(resType, 1)
             m = self.currentDimNode.getDimK()
             self.insertConstant(self._FLOAT, m)
             auxAddr = self.getMemAddr(aux)
@@ -335,15 +335,16 @@ class Compiler:
             self.insertStackOperand(resAddr)
         if self.dim > 1:
             aux2 = self.popStackOperand()
-            self.popStackType()
+            aux2type = self.popStackType()
             aux1 = self.popStackOperand()
-            self.popStackType()
+            aux1type = self.popStackType()
+            resType = self.semantic.semanticCube[operator][aux1type][aux2type]
             # if aux1 == None or aux2 == None:
             #     sys.exit("#COMPILATION ERROR VariableAccess: Missing dimensions at variable " + str(id))
             opAddr = self.semantic.operatorToKey['+']
             aux1Addr = self.getMemAddr(aux1)
             aux2Addr = self.getMemAddr(aux2)
-            resAddr = self.getTempAddr(self._FLOAT)
+            resAddr = self.functionDirectory.globalMem.reserveMemoryAddresses(resType, 1)
             quad = Quadruple(opAddr, aux1Addr, aux2Addr, resAddr)
             self.quadList.append(quad)
             quad = Quadruple('+', aux1, aux2, resAddr)
@@ -360,9 +361,9 @@ class Compiler:
     # Method to end dimensioned variable access
     def dimVarEnd(self, id):
         aux = self.popStackOperand()
-        self.popStackType()
-        tempAddr = self.getTempAddr(self._FLOAT)
-        resAddr = self.getTempAddr(self._FLOAT)
+        resType = self.popStackType()
+        tempAddr = self.functionDirectory.globalMem.reserveMemoryAddresses(resType, 1)
+        resAddr = self.functionDirectory.globalMem.reserveMemoryAddresses(resType, 1)
         # Generate quadruple to calculate memory address
         opAddr = self.semantic.operatorToKey['+']
         k = self.currentDimNode.getDimK()
@@ -535,7 +536,7 @@ class Compiler:
                 else:
                     resType = self.semantic.semanticCube[operator][leftType][rightType]
                 if resType != 'error' and resType != None:
-                    resAddr = self.getTempAddr(resType)
+                    resAddr = self.functionDirectory.globalMem.reserveMemoryAddresses(resType, 1)
                     opAddr = self.semantic.operatorToKey[operator]
                     rightAddr = self.getMemAddr(rightOperand)
                     leftAddr = self.getMemAddr(leftOperand)
@@ -700,7 +701,7 @@ class Compiler:
         val = self.popStackOperand()
         valAddr = self.getMemAddr(val)
         resType = self.functionDirectory.getType(self.localFunc)
-        resAddr = self.getTempAddr(resType)
+        resAddr = self.functionDirectory.globalMem.reserveMemoryAddresses(resType, 1)
         opAddr = self.semantic.operatorToKey['r_return']
         quad = Quadruple(opAddr, valAddr, None, resAddr)
         self.quadList.append(quad)

@@ -1,0 +1,44 @@
+/# Example program for compiler Nmod
+  Compiler developed by: domene96 aka A01192913 #/
+
+nmod NmodExample:
+
+# VARIABLES
+
+fib <- void func()
+  var int : num1, num2, count, x, sum
+{
+  num1 = 1
+  num2 = 1
+  count = 1
+  x = 19
+  if (x <= 0) {
+    print("Plese enter a positive integer")
+  }
+  else {
+    if (x equal 1) {
+      print("Fibonacci sequence:")
+      print(num1)
+    }
+    else {
+      print("Fibonacci sequence:")
+      print(0)
+      while (count <= x) {
+        if (count <= x) {
+          print(num1)
+          if (count + 1 <= x) {
+            print(num2)
+          }
+        }
+        sum = num1 + num2
+        num1 = sum
+        num2 = sum + num2
+        count = count + 2
+      }
+    }
+  }
+}
+
+main() {
+  fib()
+}

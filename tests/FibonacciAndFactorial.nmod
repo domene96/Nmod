@@ -62,8 +62,8 @@ factorial <- int func(int x) {
 }
 
 main() {
-  cyclicFib(25)
-  cyclicFactorial(6)
+  #cyclicFib(25)
+  #cyclicFactorial(6)
   #fibonacci(18)
   #factorial(8)
 }

@@ -173,7 +173,7 @@ class VirtualMachine:
         if val == None:
             sys.exit("#RUNTIME ERROR AssignOperation: cannot perform assignment operation")
         self.setValAtMem(resAddr, val)
-        if self.debug >= 0:
+        if self.debug >= 1:
             print(resAddr, " = ", self.getValAtMem(resAddr))
 
     # Method to execute arithmetic operations
@@ -200,7 +200,7 @@ class VirtualMachine:
         else:
             sys.exit("#RUNTIME ERROR VariableAccess: cannot perform arithmetic operation operator not found")
         self.setValAtMem(resAddr, res)
-        if self.debug >= 0:
+        if self.debug >= 1:
             print(resAddr, " = ", self.getValAtMem(resAddr))
 
     # Method to execute logical operations
@@ -214,35 +214,49 @@ class VirtualMachine:
             sys.exit("#RUNTIME ERROR VariableAccess: cannot perform logical operation")
         opAddr = quad.getOperator()
         if opAddr == 10:
-            res = int(leftVal > rightVal)
+            if self.debug >= 1:
+                print("logic > ", float(leftVal), float(rightVal), int((float(leftVal) > float(rightVal)) == True))
+            res = int((float(leftVal) > float(rightVal)) == True)
             self.setValAtMem(resAddr, res)
         elif opAddr == 11:
-            res = int(leftVal < rightVal)
+            if self.debug >= 1:
+                print("logic < ", float(leftVal), float(rightVal), int((float(leftVal) < float(rightVal)) == True))
+            res = int((float(leftVal) < float(rightVal)) == True)
             self.setValAtMem(resAddr, res)
         elif opAddr == 12:
-            res = int(leftVal >= rightVal)
+            if self.debug >= 1:
+                print("logic >= ", float(leftVal), float(rightVal), int((float(leftVal) >= float(rightVal)) == True))
+            res = int((float(leftVal) >= float(rightVal)) == True)
             self.setValAtMem(resAddr, res)
         elif opAddr == 13:
-            res = int(leftVal <= rightVal)
+            if self.debug >= 1:
+                print("logic <= ", float(leftVal), float(rightVal), int((float(leftVal) <= float(rightVal)) == True))
+            res = int((float(leftVal) <= float(rightVal)) == True)
             self.setValAtMem(resAddr, res)
         elif opAddr == 14:
-            res = int(leftVal == rightVal)
+            if self.debug >= 1:
+                print("logic == ", float(leftVal), float(rightVal), int((float(leftVal) == float(rightVal)) == True))
+            res = int((float(leftVal) == float(rightVal)) == True)
             self.setValAtMem(resAddr, res)
         elif opAddr == 15:
-            res = int(leftVal and rightVal)
+            if self.debug >= 1:
+                print("logic and ", float(leftVal), float(rightVal), int((float(leftVal) and float(rightVal)) == True))
+            res = int((float(leftVal) and float(rightVal)) == True)
             self.setValAtMem(resAddr, res)
         elif opAddr == 16:
-            res = int(leftVal or rightVal)
+            if self.debug >= 1:
+                print("logic and ", float(leftVal), float(rightVal), int((float(leftVal) or float(rightVal)) == True))
+            res = int((float(leftVal) or float(rightVal)) == True)
             self.setValAtMem(resAddr, res)
         else:
             sys.exit("#RUNTIME ERROR VariableAccess: cannot perform logical operation")
-        if self.debug >= 0:
+        if self.debug >= 1:
             print(resAddr, " = ", self.getValAtMem(resAddr))
 
     # Method to execute goto operations
     def gotoOperation(self, quad):
         self.instructionPointer = quad.getResult() - 1
-        if self.debug >= 0:
+        if self.debug >= 1:
             print("moved to ", self.instructionPointer + 1)
 
     # Method to execute gotoF operations
@@ -256,7 +270,7 @@ class VirtualMachine:
             check = self.getValAtMem(checkAddr)
         if check > 1 or check == 0:
             self.instructionPointer = quad.getResult() - 1
-            if self.debug >= 0:
+            if self.debug >= 1:
                 print("moved to ", self.instructionPointer + 1)
 
     # Method to execute gotoV operations
@@ -312,7 +326,7 @@ class VirtualMachine:
         self.memStack.push(self.localEra)
         self.jumpStack.push(self.instructionPointer)
         jump = quad.getResult()
-        if self.debug >= 0:
+        if self.debug >= 1:
             print("moved to ", jump)
         self.instructionPointer = int(jump) - 1
 
@@ -320,7 +334,7 @@ class VirtualMachine:
     def endprocOperation(self, quad):
         self.memStack.pop()
         self.instructionPointer = self.jumpStack.pop()
-        if self.debug >= 0:
+        if self.debug >= 1:
             print("moved to ", self.instructionPointer)
 
     # Method to execute return operations
