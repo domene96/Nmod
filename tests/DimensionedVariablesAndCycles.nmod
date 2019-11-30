@@ -21,11 +21,12 @@ main() {
 
   while(example4 >= _example3) {
     while(Example2 >= example1) {
-      mat[Example2, example4] = 123abcValid
+      mat[example4, Example2] = 123abcValid
       123abcValid = 123abcValid + 1
       Example2 = Example2 - 1
     }
     123abcValid = 123abcValid + 100
+    Example2 = 4
     example4 = example4 - 1
   }
 
@@ -39,10 +40,10 @@ main() {
 
   while(example4 >= _example3) {
     while(Example2 >= example1) {
-      123abcValid = mat[Example2, example4]
-      print(123abcValid)
+      print(mat[example4, Example2])
       Example2 = Example2 - 1
     }
+    Example2 = 4
     example4 = example4 - 1
   }
 }

@@ -41,9 +41,9 @@ condition:
 cicle:
   ( WHILE {c.insertStackJump(c.quadCount)} LPRACKET expression RPRACKET {c.conditionStart('cicle')} block {c.cicleEnd()} );
 reading:
-  ( READ LPRACKET ( STRING {c.insertConstant('char', $STRING.text)} {c.insertStackOperand($STRING.text)} | expression ( COMMA expression )* )? RPRACKET {c.generateCommonQuad('read')} );
+  ( READ LPRACKET ( STRING {c.insertConstant('char', $STRING.text)} {c.insertStackOperand($STRING.text)} {c.insertStackType('char')} | expression ( COMMA expression )* )? RPRACKET {c.generateCommonQuad('read')} );
 writing:
-  ( PRINT LPRACKET ( STRING {c.insertConstant('char', $STRING.text)} {c.insertStackOperand($STRING.text)} ( COMMA STRING {c.insertConstant('char', $STRING.text)} {c.insertStackOperand($STRING.text)} )* | expression ( COMMA expression )* )? RPRACKET {c.generateCommonQuad('print')} );
+  ( PRINT LPRACKET ( STRING {c.insertConstant('char', $STRING.text)} {c.insertStackOperand($STRING.text)} {c.insertStackType('char')} ( COMMA STRING {c.insertConstant('char', $STRING.text)} {c.insertStackOperand($STRING.text)} {c.insertStackType('char')} )* | expression ( COMMA expression )* )? RPRACKET {c.generateCommonQuad('print')} );
 call_module
   returns[Object type, val]:
   ( ID {c.generateERA($ID.text)} {c.functionDirectory.functionExists($ID.text)} {c.localFunc = $ID.text} {$val = c.getModuleReturnAddr($ID.text)} {$type = c.getModuleReturnType($ID.text)} LPRACKET {c.insertFalseBottom()} ( exp {c.generateActionParameter()} ( COMMA {c.moveParameterPointer()} exp {c.generateActionParameter()} )* )? RPRACKET {c.removeFalseBottom()} {c.resetParameterPointer()} | special_function );

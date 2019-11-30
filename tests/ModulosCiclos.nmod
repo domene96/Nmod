@@ -3,7 +3,7 @@
 
 nmod NmodExample:
 
-fib <- void func(int x)
+fibonacci <- void func(int x)
   var int : num1, num2, count, sum
 {
   num1 = 1
@@ -20,10 +20,10 @@ fib <- void func(int x)
     else {
       print("Fibonacci sequence:")
       print(0)
-      while (count <= x) {
-        if (count <= x) {
+      while (count < x) {
+        if (count < x) {
           print(num1)
-          if (count + 1 <= x) {
+          if (count + 1 < x) {
             print(num2)
           }
         }
@@ -36,7 +36,7 @@ fib <- void func(int x)
   }
 }
 
-cyclicFactorial <- int func(int x)
+factorial <- int func(int x)
   var int : res
 {
   res = 1
@@ -48,6 +48,6 @@ cyclicFactorial <- int func(int x)
 }
 
 main() {
-  #fib(25)
-  print(cyclicFactorial(6))
+  fibonacci(9)
+  print(factorial(6))
 }
