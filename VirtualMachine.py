@@ -324,7 +324,7 @@ class VirtualMachine:
     def gosubOperation(self, quad):
         self.paramCount = 0
         newEra = self.memStack.top()
-        newEra.printMemory()
+        # newEra.printMemory()
         self.functionDirectory.localMem = newEra.eraMem
         self.jumpStack.push(self.instructionPointer)
         jump = quad.getResult()
@@ -344,7 +344,7 @@ class VirtualMachine:
         valAddr = quad.getLeftOperand()
         resAddr = quad.getResult()
         val = self.getValAtMem(valAddr)
-        if self.debug >= 0:
+        if self.debug >= 1:
             print('return to ', resAddr, ' => ', val)
         self.setValAtMem(resAddr, val)
 

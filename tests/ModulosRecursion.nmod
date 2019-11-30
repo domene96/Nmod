@@ -1,0 +1,30 @@
+/# Example program for compiler Nmod
+  Compiler developed by: domene96 aka A01192913 #/
+
+nmod NmodExample:
+
+fibonacci <- void func(int x)
+  var int : temp
+{
+  if (x < 2) {
+    print(x)
+  }
+  else {
+    temp = x - 1
+    print(fibonacci(temp))
+    temp = x - 2
+    print(fibonacci(temp))
+  }
+}
+
+factorial <- int func(int x) {
+  if (x equal 1) {
+    return 1
+  }
+  return x * factorial(x - 1)
+}
+
+main() {
+  fibonacci(25)
+  #print(cyclicFactorial(6))
+}

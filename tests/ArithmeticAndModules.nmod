@@ -46,6 +46,6 @@ nothing <- float func(float a, char abc, float b, float c)
 }
 
 main() {
-  nothing(2.5, 'a', 7.0, 99.9)
+  print(nothing(2.5, 'a', 7.0, 99.9))
   evenLessNothing()
 }

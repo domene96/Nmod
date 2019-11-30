@@ -701,13 +701,21 @@ class Compiler:
         val = self.popStackOperand()
         valAddr = self.getMemAddr(val)
         resType = self.functionDirectory.getType(self.localFunc)
-        resAddr = self.functionDirectory.globalMem.reserveMemoryAddresses(resType, 1)
+        if self.debug >= 4:
+            print(resType, self.localFunc, isinstance(self.getMemAddr(self.localFunc), int))
+        if isinstance(self.getMemAddr(self.localFunc), int):
+            resAddr = self.getMemAddr(self.localFunc)
+        else:
+            resAddr = None
+        # resAddr = self.functionDirectory.globalMem.reserveMemoryAddresses(resType, 1)
         opAddr = self.semantic.operatorToKey['r_return']
         quad = Quadruple(opAddr, valAddr, None, resAddr)
         self.quadList.append(quad)
         quad = Quadruple('r_return', val, None, resAddr)
         self.quadList2.append(quad)
         self.quadCount += 1
+        self.insertStackOperand(resAddr)
+        self.insertStackType(resType)
 
     # Method to generate era quadruple for special functions
     def generateSpecialERA(self, type):

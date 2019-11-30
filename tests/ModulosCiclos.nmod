@@ -3,13 +3,12 @@
 
 nmod NmodExample:
 
-# MODULES
-cyclicFib <- int func(int x)
+fib <- void func(int x)
   var int : num1, num2, count, sum
 {
-  num1 = 0
+  num1 = 1
   num2 = 1
-  count = 2
+  count = 1
   if (x <= 0) {
     print("Plese enter a positive integer")
   }
@@ -20,26 +19,20 @@ cyclicFib <- int func(int x)
     }
     else {
       print("Fibonacci sequence:")
-      print(num1)
-      print(num2)
-      while (count < x) {
+      print(0)
+      while (count <= x) {
+        if (count <= x) {
+          print(num1)
+          if (count + 1 <= x) {
+            print(num2)
+          }
+        }
         sum = num1 + num2
-        print(sum)
-        num1 = num2
-        num2 = sum
-        count = count + 1
+        num1 = sum
+        num2 = sum + num2
+        count = count + 2
       }
     }
-  }
-  return sum
-}
-
-fibonacci <- int func(int x) {
-  if (x < 2) {
-    return x
-  }
-  else {
-    return fibonacci(x - 1) + fibonacci(x - 2)
   }
 }
 
@@ -54,16 +47,7 @@ cyclicFactorial <- int func(int x)
   return res
 }
 
-factorial <- int func(int x) {
-  if (x equal 1) {
-    return 1
-  }
-  return x * factorial(x - 1)
-}
-
 main() {
-  #cyclicFib(25)
-  #cyclicFactorial(6)
-  #fibonacci(18)
-  #factorial(8)
+  #fib(25)
+  print(cyclicFactorial(6))
 }
