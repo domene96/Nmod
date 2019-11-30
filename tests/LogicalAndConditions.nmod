@@ -10,6 +10,7 @@ main() {
         if (1 >= 1) {
           print("YAY")
         }
+        print("pass")
       }
       else {
         print(8.0 / 2.5)

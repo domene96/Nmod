@@ -5,13 +5,12 @@ nmod NmodExample:
 
 # VARIABLES
 
-fib <- void func()
-  var int : num1, num2, count, x, sum
+fib <- void func(int x)
+  var int : num1, num2, count, sum
 {
   num1 = 1
   num2 = 1
   count = 1
-  x = 19
   if (x <= 0) {
     print("Plese enter a positive integer")
   }
@@ -39,6 +38,16 @@ fib <- void func()
   }
 }
 
+recursiveFib <- int func(int x) {
+  if (x < 2) {
+    return x
+  }
+  else {
+    return recursiveFib(x - 1) + recursiveFib(x - 2)
+  }
+}
+
 main() {
-  fib()
+  #fib(25)
+  recursiveFib(5)
 }

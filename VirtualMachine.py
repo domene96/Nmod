@@ -296,8 +296,8 @@ class VirtualMachine:
     # Method to execute Expansion of Activation Record
     def eraOperation(self, quad):
         self.functionStack.push(quad.getResult())
-        self.localEra = ActivationRecord(self.localMemHandler[self.functionStack.top()])
-        self.memStack.push(self.localEra)
+        localEra = ActivationRecord(self.localMemHandler[self.functionStack.top()])
+        self.memStack.push(localEra)
         newMem = Memory("ERA", 10000, 29999)
         newEra = ActivationRecord(newMem)
         self.memStack.push(newEra)
@@ -305,7 +305,7 @@ class VirtualMachine:
             print("ERA for ", self.functionStack.top(), " created")
         if self.debug >= 4:
             print("Prev ERA ", self.functionStack.top())
-            self.localEra.printMemory()
+            localEra.printMemory()
 
     # Method to execute parameter operations
     def paramOperation(self, quad):
@@ -316,14 +316,16 @@ class VirtualMachine:
         if self.debug >= 4:
             print('param', self.paramCount, paramAddr, paramVal)
         funcParamAddr = self.functionDirectory.getVarTable(self.functionStack.top()).paramMemAddr(self.paramCount)
-        self.localEra = self.memStack.top()
-        self.localEra.eraMem.setValueAtAddress(funcParamAddr, paramVal)
+        localEra = self.memStack.top()
+        localEra.eraMem.setValueAtAddress(funcParamAddr, paramVal)
         self.paramCount += 1
 
     # Method to execute gosub operations
     def gosubOperation(self, quad):
         self.paramCount = 0
-        self.memStack.push(self.localEra)
+        newEra = self.memStack.top()
+        newEra.printMemory()
+        self.functionDirectory.localMem = newEra.eraMem
         self.jumpStack.push(self.instructionPointer)
         jump = quad.getResult()
         if self.debug >= 1:
