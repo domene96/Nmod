@@ -9,6 +9,54 @@ var int : 123abcValid
 var float : example7, mat[1:4,-2:5]
 
 # MODULES
+sort <- void func()
+  var int : vector[-10:10], fill, temp
+{
+  print("Sorting vector:")
+
+  example1 = 10
+  Example2 = -10
+  fill = 100
+
+  # FILL
+  while(Example2 <= example1) {
+    vector[Example2] = fill
+    fill = fill - 3
+    Example2 = Example2 + 1
+  }
+
+  # PRINT UNSORTED
+  Example2 = -10
+  while(Example2 <= example1) {
+    print(vector[Example2])
+    Example2 = Example2 + 1
+  }
+
+  # SORT
+  Example2 = -10
+  while(Example2 < example1) {
+    while(Example2 < example1) {
+      if (vector[Example2] > vector[Example2 + 1]) {
+        temp = vector[Example2]
+        vector[Example2] = vector[Example2 + 1]
+        vector[Example2 + 1] = temp
+      }
+      Example2 = Example2 + 1
+    }
+    example1 = example1 - 1
+    Example2 = -10
+  }
+
+  # PRINT SORTED
+  print("Sorted:")
+  Example2 = -10
+  example1 = 10
+  while(Example2 <= example1) {
+    print(vector[Example2])
+    Example2 = Example2 + 1
+  }
+}
+
 find <- void func(int value)
   var int : foundFlag
 {
@@ -87,4 +135,7 @@ main() {
   find(344)
   find(454)
   find(-1)
+
+  # SORT
+  sort()
 }

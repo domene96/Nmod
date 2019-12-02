@@ -43,7 +43,7 @@ cicle:
 reading:
   ( READ LPRACKET ( STRING {c.insertConstant('char', $STRING.text)} {c.insertStackOperand($STRING.text)} {c.insertStackType('char')} | expression ( COMMA expression )* )? RPRACKET {c.generateCommonQuad('read')} );
 writing:
-  ( PRINT LPRACKET ( STRING {c.insertConstant('char', $STRING.text)} {c.insertStackOperand($STRING.text)} {c.insertStackType('char')} ( COMMA STRING {c.insertConstant('char', $STRING.text)} {c.insertStackOperand($STRING.text)} {c.insertStackType('char')} )* | expression ( COMMA expression )* )? RPRACKET {c.generateCommonQuad('print')} );
+  ( PRINT LPRACKET ( STRING {c.insertConstant('char', $STRING.text)} {c.insertStackOperand($STRING.text)} {c.insertStackType('char')} | expression RPRACKET {c.generateCommonQuad('print')} );
 call_module
   returns[Object type, val]:
   ( ID {c.generateERA($ID.text)} {c.functionDirectory.functionExists($ID.text)} {c.localFunc = $ID.text} {$val = c.getModuleReturnAddr($ID.text)} {$type = c.getModuleReturnType($ID.text)} LPRACKET {c.insertFalseBottom()} ( exp {c.generateActionParameter()} ( COMMA {c.moveParameterPointer()} exp {c.generateActionParameter()} )* )? RPRACKET {c.removeFalseBottom()} {c.resetParameterPointer()} | special_function );

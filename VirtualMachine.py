@@ -303,9 +303,9 @@ class VirtualMachine:
         leftAddr = quad.getLeftOperand()
         rightAddr = quad.getRightOperand()
         resAddr = quad.getResult()
-        leftVal = self.getValAtMem(leftAddr)
-        rightVal = self.getValAtMem(rightAddr)
-        resVal = self.getValAtMem(resAddr)
+        leftVal = float(self.getValAtMem(leftAddr))
+        rightVal = float(self.getValAtMem(rightAddr))
+        resVal = float(self.getValAtMem(resAddr))
         if resVal >= leftVal and resVal <= rightVal:
             if self.debug >= 4:
                 print('revise ', leftVal, rightVal, resVal, True)
