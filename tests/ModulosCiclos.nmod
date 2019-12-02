@@ -34,6 +34,7 @@ fibonacci <- void func(int x)
       }
     }
   }
+  print("End of sequence.")
 }
 
 factorial <- int func(int x)
@@ -48,6 +49,6 @@ factorial <- int func(int x)
 }
 
 main() {
-  fibonacci(9)
   print(factorial(6))
+  fibonacci(9)
 }

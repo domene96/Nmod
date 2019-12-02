@@ -48,7 +48,7 @@ class Compiler:
     # Method to check if current local function is recursive
     def checkRecursive(self):
         if self.localFunc != 'global':
-            if self.functionDirectory.getVarTable(self.localFunc).varExists(self.localFunc):
+            if self.functionDirectory.getVarTable('global').varExists(self.localFunc):
                 return True
         return False
 
@@ -247,30 +247,28 @@ class Compiler:
         self.dim = 1
         self.sum = 0
         while self.dim <= dimCant:
-            if self.debug >= 1:
+            if self.debug >= 4:
                 print("while k ", self.dim, dimCant)
             low = int(self.currentDimNode.getDimLow())
             high = int(self.currentDimNode.getDimHigh())
             m = self.r / (high - low + 1)
-            if self.debug >= 1:
+            if self.debug >= 4:
                 print(m, self.r, high, low)
             self.r = m
             if self.dim != dimCant:
                 self.currentDimNode.setDimK(m)
-            print(self.sum, low, m)
-            self.sum = self.sum + low * m ###### CALCULATE CORRECTLY
-            print(self.sum)
+            self.sum = self.sum + low * m
             self.dim += 1
-            if self.debug >= 1:
+            if self.debug >= 4:
                 print("m ", self.r)
                 self.currentDimNode.print()
             if self.currentDimNode.getDimPointer() != None:
                 self.currentDimNode = self.currentDimNode.getDimPointer()
-        if self.debug >= 1:
+        if self.debug >= 4:
             print("sum ", self.sum, "r ", self.r)
         self.k = self.sum
         self.currentDimNode.setDimK(0 - self.k)
-        if self.debug >= 1:
+        if self.debug >= 4:
             print("k ", self.k)
             self.currentDimNode.print()
 
@@ -402,6 +400,7 @@ class Compiler:
         self.quadList2.append(quad)
         self.quadCount += 1
         self.insertStackOperand(resAddr)
+        self.insertStackType(resType)
         self.popStackOperator()
         self.popStackDim()
         self.dim = 1
@@ -543,8 +542,6 @@ class Compiler:
                 leftOperand = self.popStackOperand()
                 leftType = self.popStackType()
                 operator = self.popStackOperator()
-                leftOperand, leftType = self.checkVariable(leftOperand, leftType)
-                rightOperand, rightType = self.checkVariable(rightOperand, rightType)
                 if self.debug >= 4:
                     print(operator, leftOperand, leftType, rightOperand, rightType)
                 if leftType == None or rightType == None:
@@ -574,14 +571,10 @@ class Compiler:
             opAddr = self.semantic.operatorToKey[operator]
             val = self.popStackOperand()
             res = self.popStackOperand()
-            # if self.debug >= 1:
-            #     print(res, operator, val)
+            if self.debug >= 4:
+                print(res, operator, val)
             valType = self.popStackType()
             resType = self.popStackType()
-            if val == self.getMemAddr(val):
-                val, valType = self.checkVariable(val, valType)
-            if res == self.getMemAddr(res):
-                res, resType = self.checkVariable(res, resType)
             valAddr = self.getMemAddr(val)
             resAddr = self.getMemAddr(res)
             if self.debug >= 4:
@@ -731,7 +724,6 @@ class Compiler:
             resAddr = self.getMemAddr(self.localFunc)
         else:
             resAddr = None
-        # resAddr = self.functionDirectory.globalMem.reserveMemoryAddresses(resType, 1)
         opAddr = self.semantic.operatorToKey['r_return']
         quad = Quadruple(opAddr, valAddr, None, resAddr)
         self.quadList.append(quad)

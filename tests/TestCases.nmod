@@ -53,17 +53,17 @@ main() {
   thisIsAnIntDeclaredAndAll = 0
   while(thisIsAnIntDeclaredAndAll < 5) {
     print(matrix[thisIsAnIntDeclaredAndAll])
-    thisIsAnIntDeclaredAndAll = thisIsAnIntDeclaredAndAll - 1
+    thisIsAnIntDeclaredAndAll = thisIsAnIntDeclaredAndAll + 1
   }
 
   # TC11. Function calling
   helloWorld(1192913)
 
   # TC12. Recursion
-  factorial(9)
+  print(factorial(9))
 
   # TC13. Special functions
-  rexp(2.0, 5.5)
+  #rexp(2.0, 5.5)
 
   # TC14. Error
   #whoAmI = "false"

@@ -25,6 +25,13 @@ class VirtualMachine:
         # Debug flag
         self.debug = 0 # Not passed by compiler: 0 running VM, 1 current issues, 2 quad count, 3 current quad, 4 resolved issues
 
+    # Method to check if current local function is recursive
+    def checkRecursive(self):
+        if self.functionStack.top() != 'global':
+            if self.functionDirectory.getVarTable('global').varExists(self.functionStack.top()):
+                return True
+        return False
+
     # Methods to handle memory directions which store memory directions
     def checkVariables(self, leftAddr, rightAddr, resAddr):
         if isinstance(leftAddr, str):
@@ -55,7 +62,7 @@ class VirtualMachine:
         return leftVal, rightVal, resAddr
 
     # Methods to handle memory directions which store memory directions
-    def checkVariable(self, resAddr):
+    def checkVariable(self, resAddr, depth):
         if isinstance(resAddr, str):
             if resAddr[0] == '(':
                 resAddr = resAddr[1:-1]
@@ -63,10 +70,17 @@ class VirtualMachine:
             if resAddr[0] == '¿':
                 resAddr = int(resAddr[1:])
                 resAddr = int(self.getValAtMem(resAddr)) # Get memory direction at memory direction
-                res = self.getValAtMem(resAddr) # Set memory direction as value
+                if depth == 'val':
+                    res = self.getValAtMem(resAddr) # Set memory direction as value
+            if depth == 'val':
+                return res
+            else:
+                return resAddr
+        if depth == 'val':
+            res = str(self.getValAtMem(resAddr))
             return res
-        res = str(self.getValAtMem(resAddr))
-        return res
+        else:
+            return resAddr
 
     # Run virtual machine
     def run(self, quads):
@@ -145,7 +159,7 @@ class VirtualMachine:
     # Method to execute write operations
     def writeOperation(self, quad):
         resAddr = quad.getResult()
-        res = self.checkVariable(resAddr)
+        res = self.checkVariable(resAddr, 'val')
         if self.debug >= 0:
             print("printing ", res)
 
@@ -167,11 +181,12 @@ class VirtualMachine:
     def assignOperation(self, quad):
         resAddr = quad.getResult()
         valAddr = quad.getLeftOperand()
-        val = self.checkVariable(valAddr)
+        val = self.checkVariable(valAddr, 'val')
+        resAddr = self.checkVariable(resAddr, 'mem')
         if val == None:
             sys.exit("#RUNTIME ERROR AssignOperation: cannot perform assignment operation")
         self.setValAtMem(resAddr, val)
-        if self.debug >= 4:
+        if self.debug >= 1:
             print(resAddr, " = ", self.getValAtMem(resAddr))
 
     # Method to execute arithmetic operations
@@ -183,30 +198,30 @@ class VirtualMachine:
         if leftVal == None or rightVal == None:
             sys.exit("#RUNTIME ERROR VariableAccess: cannot perform arithmetic operation unassigned variable")
         opAddr = quad.getOperator()
-        if self.debug >= 4:
+        if self.debug >= 1:
             print(opAddr, leftVal, rightVal, resAddr)
         if opAddr == 6:
             res = float(leftVal) + float(rightVal)
-            if self.debug >= 4:
+            if self.debug >= 1:
                 print(float(leftVal) + float(rightVal))
         elif opAddr == 7:
             res = float(leftVal) - float(rightVal)
-            if self.debug >= 4:
+            if self.debug >= 1:
                 print(float(leftVal) - float(rightVal))
         elif opAddr == 8:
             res = float(leftVal) * float(rightVal)
-            if self.debug >= 4:
+            if self.debug >= 1:
                 print(float(leftVal) * float(rightVal))
         elif opAddr == 9:
             if leftVal == 0 or rightVal == 0:
                 sys.exit("#RUNTIME ERROR VariableAccess: cannot perform division by 0")
             res = float(leftVal) / float(rightVal)
-            if self.debug >= 4:
+            if self.debug >= 1:
                 print(float(leftVal) / float(rightVal))
         else:
             sys.exit("#RUNTIME ERROR VariableAccess: cannot perform arithmetic operation operator not found")
         self.setValAtMem(resAddr, res)
-        if self.debug >= 4:
+        if self.debug >= 1:
             print(resAddr, " = ", self.getValAtMem(resAddr))
 
     # Method to execute logical operations
@@ -214,8 +229,8 @@ class VirtualMachine:
         leftAddr = quad.getLeftOperand()
         rightAddr = quad.getRightOperand()
         resAddr = quad.getResult()
-        leftVal = self.checkVariable(leftAddr)
-        rightVal = self.checkVariable(rightAddr)
+        leftVal = self.checkVariable(leftAddr, 'val')
+        rightVal = self.checkVariable(rightAddr, 'val')
         if leftVal == None or rightVal == None:
             sys.exit("#RUNTIME ERROR VariableAccess: cannot perform logical operation")
         opAddr = quad.getOperator()
@@ -316,7 +331,7 @@ class VirtualMachine:
     # Method to execute parameter operations
     def paramOperation(self, quad):
         paramAddr = quad.getLeftOperand()
-        paramVal = self.checkVariable(paramAddr)
+        paramVal = self.checkVariable(paramAddr, 'val')
         if self.debug >= 4:
             print('param', self.paramCount, paramAddr, paramVal)
         funcParamAddr = self.functionDirectory.getVarTable(self.functionStack.top()).paramMemAddr(self.paramCount)
@@ -358,7 +373,10 @@ class VirtualMachine:
         if self.debug >= 4:
             self.functionStack.print()
             self.memStack.print()
-        self.functionDirectory.localMem = endEra.eraMem
+        if self.checkRecursive():
+            self.functionDirectory.localMem = nextEra.eraMem
+        else:
+            self.functionDirectory.localMem = endEra.eraMem
         valAddr = quad.getLeftOperand()
         resAddr = quad.getResult()
         val = self.getValAtMem(valAddr)
